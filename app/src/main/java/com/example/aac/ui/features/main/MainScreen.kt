@@ -103,7 +103,7 @@ fun CategoryRow() {
             CategoryTab(iconRes = icon, text = name, isSelected = isSelected, modifier = Modifier.weight(1f))
         }
 
-        // 오른쪽 화살표
+
         IconButton(onClick = {}, modifier = Modifier.size(40.dp)) {
             Image(painter = painterResource(R.drawable.btn_next), contentDescription = "다음")
         }
@@ -121,10 +121,8 @@ fun RightSideBar() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // 7번: 설정 버튼
         SmallRoundedIconButton(iconRes = R.drawable.ic_setting, text = "설정", containerColor = Color.White)
 
-        // 8번: 리액션 버튼들
         SmallReactionButton(iconRes = R.drawable.ic_good, text = "좋아요")
         SmallReactionButton(iconRes = R.drawable.ic_bad, text = "싫어요")
         SmallReactionButton(iconRes = R.drawable.ic_question, text = "질문")
@@ -133,7 +131,6 @@ fun RightSideBar() {
     }
 }
 
-// --- [공통 컴포넌트 정의] ---
 
 @Composable
 fun RoundedIconButton(
