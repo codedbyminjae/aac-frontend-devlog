@@ -1,10 +1,10 @@
-package com.example.aac.feature.ai_sentence.ui
+package com.example.aac.ui.features.ai_sentence.ui
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import com.example.aac.feature.ai_sentence.model.SentenceItemUiModel
+import com.example.aac.ui.features.ai_sentence.model.SentenceItemUiModel
 import java.util.UUID
 
 class AiSentenceViewModel : ViewModel() {

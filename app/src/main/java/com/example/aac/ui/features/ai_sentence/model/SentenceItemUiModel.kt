@@ -1,4 +1,4 @@
-package com.example.aac.feature.ai_sentence.model
+package com.example.aac.ui.features.ai_sentence.model
 
 data class SentenceItemUiModel(
     val id: String,

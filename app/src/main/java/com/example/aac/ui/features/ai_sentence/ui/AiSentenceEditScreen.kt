@@ -1,4 +1,4 @@
-package com.example.aac.feature.ai_sentence.ui
+package com.example.aac.ui.features.ai_sentence.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes

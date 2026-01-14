@@ -1,6 +1,6 @@
-package com.example.aac.feature.ai_sentence.ui
+package com.example.aac.ui.features.ai_sentence.ui
 
-import com.example.aac.feature.ai_sentence.model.SentenceItemUiModel
+import com.example.aac.ui.features.ai_sentence.model.SentenceItemUiModel
 
 data class AiSentenceUiState(
     val selectedWords: List<String> = emptyList(),
