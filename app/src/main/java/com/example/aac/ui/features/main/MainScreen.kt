@@ -28,7 +28,10 @@ import com.example.aac.ui.features.main.components.CardData
 val SideBarGray = Color(0xFF666666)
 
 @Composable
-fun MainScreen(onNavigateToAiSentence: () -> Unit = {}) {
+fun MainScreen(
+    onNavigateToAiSentence: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
+) {
     // 1. 상태 관리 (현재 선택된 카테고리 인덱스)
     var selectedCategoryIndex by remember { mutableIntStateOf(0) }
 
@@ -103,7 +106,7 @@ fun MainScreen(onNavigateToAiSentence: () -> Unit = {}) {
                 )
 
                 Surface(
-                    onClick = { /* 설정 */ },
+                    onClick = { onNavigateToSettings() }, // 수정
                     shape = RoundedCornerShape(8.dp),
                     color = Color(0xFFEEEEEE),
                     border = BorderStroke(1.dp, Color(0xFFCCCCCC)),

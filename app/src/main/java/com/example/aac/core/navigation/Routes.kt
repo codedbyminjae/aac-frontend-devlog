@@ -19,4 +19,7 @@ object Routes {
 
     fun aiSentenceEditRoute(text: String): String =
         "$AI_SENTENCE_EDIT?text=${Uri.encode(text)}"
+
+    // 설정 화면 (추가)
+    const val SETTINGS = "settings"
 }
