@@ -1,15 +1,12 @@
 package com.example.aac.ui.features.category
 
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
-import org.burnoutcrew.reorderable.detectReorder
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -22,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
 import com.example.aac.ui.features.category.components.*
+
+import sh.calvin.reorderable.*
 
 @Composable
 fun CategoryManagementScreen(
@@ -40,13 +39,23 @@ fun CategoryManagementScreen(
         )
     }
 
-    // [중요] Reorderable State 선언
-    val state = rememberReorderableLazyListState(onMove = { from, to ->
-        // 데이터 리스트 순서 변경 로직 (List Swap)
-        categoryList.apply {
-            add(to.index, removeAt(from.index))
+    val listState = rememberLazyListState()
+
+    val reorderableState = rememberReorderableLazyListState(listState) { from, to ->
+        val fromId = from.key as? String
+        val toId = to.key as? String
+
+        if (fromId != null && toId != null) {
+            val fromIndex = categoryList.indexOfFirst { it.id == fromId }
+            val toIndex = categoryList.indexOfFirst { it.id == toId }
+
+            if (fromIndex != -1 && toIndex != -1 && fromIndex != toIndex) {
+                categoryList.apply {
+                    add(toIndex, removeAt(fromIndex))
+                }
+            }
         }
-    })
+    }
 
     Column(
         modifier = Modifier
@@ -61,34 +70,37 @@ fun CategoryManagementScreen(
         )
 
         LazyColumn(
-            state = state.listState, // 스크롤 상태 연결
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .reorderable(state), // reorderable 모디파이어 적용
+                .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(top = 20.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item { TipBox() }
+            item {
+                TipBox()
+            }
 
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                AddCategoryButton(onClick = { /* 추가 */ })
+                AddCategoryButton(onClick = { /* 추가 로직 */ })
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // [중요] items 대신 items(list, key) 사용 필수
             items(items = categoryList, key = { it.id }) { item ->
 
-                ReorderableItem(reorderableState = state, key = item.id) { isDragging ->
+                ReorderableItem(state = reorderableState, key = item.id) { isDragging ->
+
+                    val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp, label = "elevation")
+
                     CategoryEditListItem(
                         data = item,
-                        isDragging = isDragging, // 드래그 중 시각 효과
+                        isDragging = isDragging,
 
-                        dragModifier = Modifier.detectReorder(state),
+                        dragModifier = Modifier.draggableHandle(),
 
-                        onEditClick = { },
-                        onDeleteClick = { }
+                        onEditClick = { /* 편집 로직 */ },
+                        onDeleteClick = { /* 삭제 로직 */ }
                     )
                 }
             }
@@ -113,7 +125,7 @@ fun CustomTopBar(onBackClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(CustomBlue, androidx.compose.foundation.shape.CircleShape),
+                    .background(Color(0xFF267FD6), androidx.compose.foundation.shape.CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -137,7 +149,7 @@ fun CustomTopBar(onBackClick: () -> Unit) {
         )
 
         TextButton(onClick = { }) {
-            Text("저장하기", color = CustomBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("저장하기", color = Color(0xFF267FD6), fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
     }
     HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp)
