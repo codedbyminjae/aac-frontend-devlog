@@ -27,13 +27,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
+// 컴포넌트 import 확인 (패키지 경로가 다르면 수정해주세요)
 import com.example.aac.ui.features.category.components.AddWordCardDialog
 import com.example.aac.ui.features.category.components.CategorySelectionBottomSheet
 import com.example.aac.ui.features.category.components.TipBox
 
 import sh.calvin.reorderable.*
 
-// 낱말 카드용
+// 낱말 카드 데이터 모델
 data class WordCardData(
     val id: String,
     val title: String,
@@ -42,12 +43,12 @@ data class WordCardData(
 
 @Composable
 fun WordCardManagementContent() {
-    // [상태 관리] 모달 및 바텀 시트 표시 여부
+    // [상태 관리]
     var showAddDialog by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
     var selectedCategoryName by remember { mutableStateOf("최근사용") }
 
-    // 바텀 시트에 보여줄 카테고리 더미 데이터
+    // 바텀 시트에 보여줄 카테고리 데이터
     val categoryList = remember {
         listOf(
             CategoryEditData(iconRes = R.drawable.ic_default, title = "최근사용", count = 0),
@@ -75,9 +76,9 @@ fun WordCardManagementContent() {
     }
 
     val gridState = rememberLazyGridState()
-
     val reorderableState = rememberReorderableLazyGridState(gridState) { from, to ->
         if (from.index == 0 || to.index == 0) return@rememberReorderableLazyGridState
+
         val fromId = from.key as? String
         val toId = to.key as? String
         if (fromId != null && toId != null) {
@@ -89,12 +90,12 @@ fun WordCardManagementContent() {
         }
     }
 
-    // 전체 배경 및 중앙 정렬을 위한 Box
+    // [전체 레이아웃]
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F6F8)),
-        contentAlignment = Alignment.TopCenter // 내부 컨텐츠 중앙 정렬
+        contentAlignment = Alignment.TopCenter
     ) {
         Column(
             modifier = Modifier
@@ -102,11 +103,12 @@ fun WordCardManagementContent() {
                 .fillMaxHeight()
                 .padding(vertical = 16.dp)
         ) {
-
+            // 1. 팁 박스
             TipBox(text = "팁 : 낱말 카드를 드래그하여 순서를 변경하실 수 있어요. 자주 사용하는 낱말을 쉽게 찾을 수 있는 위치에 배치해보세요!")
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // 2. 카테고리 선택 바
             CategorySelectorBar(
                 currentCategory = selectedCategoryName,
                 onClick = { showCategorySheet = true }
@@ -114,13 +116,14 @@ fun WordCardManagementContent() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // 3. 낱말 카드 리스트 영역
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f) // 남은 공간 모두 차지
-                    .clip(RoundedCornerShape(20.dp)) // 모서리 둥글게
-                    .background(Color.White) // 흰색 배경
-                    .padding(24.dp) // 내부 여백
+                    .weight(1f)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.White)
+                    .padding(24.dp)
             ) {
                 LazyVerticalGrid(
                     state = gridState,
@@ -131,8 +134,10 @@ fun WordCardManagementContent() {
                 ) {
                     items(wordList, key = { it.id }) { item ->
                         if (item.id == "ADD_BUTTON") {
+                            // 추가 버튼
                             AddWordCardItem(onClick = { showAddDialog = true })
                         } else {
+                            // 드래그 가능한 낱말 카드 아이템
                             ReorderableItem(state = reorderableState, key = item.id) { isDragging ->
                                 val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp, label = "elevation")
 
@@ -155,7 +160,7 @@ fun WordCardManagementContent() {
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.Dashboard,
+                                                imageVector = Icons.Default.Dashboard, // 필요시 이미지 리소스로 변경
                                                 contentDescription = null,
                                                 tint = Color.Black.copy(alpha = 0.7f),
                                                 modifier = Modifier.size(20.dp)
@@ -178,18 +183,26 @@ fun WordCardManagementContent() {
         }
     }
 
-    // 다이얼로그 & 바텀 시트 호출
+    // [다이얼로그 & 바텀 시트 호출]
     if (showAddDialog) {
         AddWordCardDialog(
             onDismissRequest = { showAddDialog = false },
             onSaveClick = { newWord ->
-                wordList.add(WordCardData(id = System.currentTimeMillis().toString(), title = newWord, color = Color(0xFFE1BEE7)))
+                // 임시 ID 생성 및 추가
+                wordList.add(
+                    WordCardData(
+                        id = System.currentTimeMillis().toString(),
+                        title = newWord,
+                        color = Color(0xFFE1BEE7)
+                    )
+                )
                 showAddDialog = false
             }
         )
     }
 
     if (showCategorySheet) {
+        // 분리된 컴포넌트 사용
         CategorySelectionBottomSheet(
             categoryList = categoryList,
             onDismissRequest = { showCategorySheet = false },
@@ -201,6 +214,8 @@ fun WordCardManagementContent() {
     }
 }
 
+// 내부 사용 컴포넌트
+
 @Composable
 fun AddWordCardItem(onClick: () -> Unit) {
     Box(
@@ -209,7 +224,7 @@ fun AddWordCardItem(onClick: () -> Unit) {
             .clip(RoundedCornerShape(12.dp))
             .background(Color(0xFFF8F9FA))
             .border(
-                BorderStroke(2.dp, Color(0xFFE0E0E0)), // 테두리 색상 조정
+                BorderStroke(2.dp, Color(0xFFE0E0E0)),
                 RoundedCornerShape(12.dp)
             )
             .clickable(onClick = onClick),
@@ -241,6 +256,7 @@ fun CategorySelectorBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(71.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
             .clickable(onClick = onClick)
@@ -255,14 +271,14 @@ fun CategorySelectorBar(
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = "카테고리 선택",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Normal,
             color = Color.Black,
             modifier = Modifier.weight(1f)
         )
         Text(
             text = currentCategory,
-            fontSize = 14.sp,
+            fontSize = 24.sp,
             color = Color.Gray
         )
         Spacer(modifier = Modifier.width(8.dp))

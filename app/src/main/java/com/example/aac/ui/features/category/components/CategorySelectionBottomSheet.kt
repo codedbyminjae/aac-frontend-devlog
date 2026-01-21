@@ -1,5 +1,6 @@
 package com.example.aac.ui.features.category.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,8 +18,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.aac.R
 import com.example.aac.ui.features.category.CategoryEditData
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,120 +31,142 @@ fun CategorySelectionBottomSheet(
     onDismissRequest: () -> Unit,
     onCategorySelected: (CategoryEditData) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
-    var selectedId by remember { mutableStateOf<String?>(null) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var selectedCategory by remember { mutableStateOf<CategoryEditData?>(null) }
+
+    val displayList = remember {
+        listOf(
+            CategoryEditData(iconRes = R.drawable.ic_default, title = "최근사용", count = 0),
+            CategoryEditData(iconRes = R.drawable.ic_favorite, title = "즐겨찾기", count = 0),
+            CategoryEditData(iconRes = R.drawable.ic_default, title = "기본", count = 0),
+            CategoryEditData(iconRes = R.drawable.ic_human, title = "사람", count = 0),
+            CategoryEditData(iconRes = R.drawable.ic_act, title = "행동", count = 0),
+            CategoryEditData(iconRes = R.drawable.ic_emotion, title = "감정", count = 0),
+            CategoryEditData(iconRes = R.drawable.ic_food, title = "음식", count = 0),
+            CategoryEditData(iconRes = R.drawable.ic_place, title = "장소", count = 0),
+            CategoryEditData(iconRes = R.drawable.ic_act, title = "신체", count = 0),
+            CategoryEditData(iconRes = R.drawable.ic_question, title = "어미", count = 0)
+        )
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = Color.White
+        containerColor = Color.White,
+        dragHandle = null,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 40.dp) // 하단 여백
+                .padding(horizontal = 24.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 헤더 (제목 + 닫기 버튼)
+            // [1] 헤더
             Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 30.dp)
             ) {
                 Text(
                     text = "낱말 카드를 추가할 카테고리를 선택하세요",
-                    fontSize = 16.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = Color.Black,
+                    modifier = Modifier.align(Alignment.Center),
+                    textAlign = TextAlign.Center
                 )
+
                 IconButton(
                     onClick = onDismissRequest,
                     modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = Color.Gray
+                        contentDescription = "닫기",
+                        tint = Color.Black
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 카테고리 가로 스크롤 리스트
+            // [2] 리스트
             LazyRow(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                items(categoryList) { category ->
-                    CategorySelectionItem(
-                        category = category,
-                        isSelected = selectedId == category.id,
-                        onClick = { selectedId = category.id }
+                // items(categoryList) { item ->
+                items(displayList) { item ->
+                    CategoryItemCard(
+                        category = item,
+                        isSelected = selectedCategory == item,
+                        onClick = { selectedCategory = item }
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
-            // 완료 버튼
+            // [3] 완료 버튼
             Button(
                 onClick = {
-                    val selected = categoryList.find { it.id == selectedId }
-                    if (selected != null) {
-                        onCategorySelected(selected)
-                    } else {
-                        onDismissRequest() // 선택 안하고 누르면 그냥 닫기
-                    }
+                    selectedCategory?.let { onCategorySelected(it) } ?: onDismissRequest()
                 },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)),
+                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF267FD6)),
-                shape = RoundedCornerShape(8.dp)
+                    .height(56.dp)
             ) {
-                Text("완료", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(
+                    text = "완료",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
 @Composable
-fun CategorySelectionItem(
+fun CategoryItemCard(
     category: CategoryEditData,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val borderColor = if (isSelected) Color(0xFF3B82F6) else Color(0xFFE0E0E0)
+    val borderWidth = if (isSelected) 2.dp else 1.dp
+
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .width(72.dp)
+            .width(80.dp)
+            .height(90.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
             .clickable(onClick = onClick)
+            .border(BorderStroke(borderWidth, borderColor), RoundedCornerShape(12.dp)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                .border(
-                    width = if (isSelected) 2.dp else 1.dp,
-                    color = if (isSelected) Color(0xFF267FD6) else Color(0xFFEEEEEE),
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .clip(RoundedCornerShape(12.dp))
-                .background(if (isSelected) Color(0xFFE3F2FD) else Color.White),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = category.iconRes),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(24.dp)
-            )
-        }
+        Icon(
+            painter = painterResource(id = category.iconRes),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(32.dp)
+        )
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             text = category.title,
-            fontSize = 12.sp,
-            color = if (isSelected) Color(0xFF267FD6) else Color.Gray,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            maxLines = 1
         )
     }
 }
