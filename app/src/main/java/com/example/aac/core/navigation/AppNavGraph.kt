@@ -10,6 +10,7 @@ import com.example.aac.ui.features.main.MainScreen
 import com.example.aac.ui.features.ai_sentence.ui.AiSentenceScreen
 import com.example.aac.ui.features.ai_sentence.ui.AiSentenceEditScreen
 import com.example.aac.ui.features.login.LoginScreen
+import com.example.aac.ui.features.settings.SettingsScreen
 
 @Composable
 fun AppNavGraph() {
@@ -32,6 +33,9 @@ fun AppNavGraph() {
             MainScreen(
                 onNavigateToAiSentence = {
                     navController.navigate(Routes.AI_SENTENCE)
+                },
+                onNavigateToSettings = { // 추가
+                    navController.navigate(Routes.SETTINGS)
                 }
             )
         }
@@ -42,6 +46,12 @@ fun AppNavGraph() {
                 onEditNavigate = { text ->
                     navController.navigate(Routes.aiSentenceEditRoute(text))
                 }
+            )
+        }
+
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                onBackClick = { navController.popBackStack() } // 뒤로가기 → 메인 복귀
             )
         }
 
