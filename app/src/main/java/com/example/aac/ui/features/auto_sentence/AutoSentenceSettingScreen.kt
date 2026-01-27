@@ -25,7 +25,7 @@ fun AutoSentenceSettingScreen(
     onAddClick: () -> Unit,
     onEditClick: (AutoSentenceItem) -> Unit,
     onSelectDeleteClick: () -> Unit,
-    onDeleteAll: () -> Unit,                 // ⭐ 전체 삭제 콜백 추가
+    onDeleteAll: () -> Unit,                 // 전체 삭제 콜백 추가
     autoSentenceList: List<AutoSentenceItem>
 ) {
     var showMoreMenu by rememberSaveable { mutableStateOf(false) }
@@ -126,7 +126,7 @@ fun AutoSentenceSettingScreen(
                 showDeleteAllDialog = false
             },
             onConfirm = {
-                onDeleteAll()               // ✅ 실제 전체 삭제
+                onDeleteAll()               // 실제 전체 삭제
                 showDeleteAllDialog = false
             }
         )

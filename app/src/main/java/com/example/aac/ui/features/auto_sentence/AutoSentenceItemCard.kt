@@ -25,7 +25,7 @@ import com.example.aac.R
 fun AutoSentenceItemCard(
     item: AutoSentenceItem,
     onSoundClick: (AutoSentenceItem) -> Unit = {},
-    onItemClick: () -> Unit = {} // 🔥 확장 포인트
+    onItemClick: () -> Unit = {} // 확장 포인트
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -51,7 +51,7 @@ fun AutoSentenceItemCard(
             )
             .clickable(
                 interactionSource = interactionSource,
-                indication = null, // ✅ ripple 제거 (원하면 살릴 수 있음)
+                indication = null,
                 onClick = onItemClick
             )
             .padding(

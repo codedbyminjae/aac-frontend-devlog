@@ -108,14 +108,14 @@ fun RepeatCycleBottomSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
 
-                        // ⬅️ 반복 타입 선택
+                        // 반복 타입 선택
                         RepeatTypeWheelSelector(
                             selectedType = selectedType,
                             onTypeSelected = { selectedType = it }
                         )
 
-                        // ➡️ 요일 선택 (매주 / 격주만)
-                        // ➡️ 오른쪽 영역 (타입별)
+                        // 요일 선택 (매주 / 격주만)
+                        // 오른쪽 영역 (타입별)
                         when (selectedType) {
 
                             RepeatType.WEEKLY,

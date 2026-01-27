@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun AutoSentenceOptionCard(
-    modifier: Modifier = Modifier,   // ⭐ modifier 받기
+    modifier: Modifier = Modifier,   // modifier 받기
     iconRes: Int,
     title: String,
     value: String,
@@ -26,7 +26,7 @@ fun AutoSentenceOptionCard(
 ) {
     Row(
         modifier = modifier
-            .defaultMinSize(minHeight = 71.dp)   // ⭐ 핵심
+            .defaultMinSize(minHeight = 71.dp)   // 핵심
             .background(
                 color = Color.White,
                 shape = RoundedCornerShape(12.dp)

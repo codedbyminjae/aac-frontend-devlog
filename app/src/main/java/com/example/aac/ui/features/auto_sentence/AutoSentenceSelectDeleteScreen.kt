@@ -14,7 +14,7 @@ fun AutoSentenceSelectDeleteScreen(
     onDeleteSelected: (Set<Long>) -> Unit
 ) {
     var selectedIds by remember { mutableStateOf(setOf<Long>()) }
-    var showDeleteDialog by remember { mutableStateOf(false) } // ⭐ 모달 상태
+    var showDeleteDialog by remember { mutableStateOf(false) } // 모달 상태
 
     Scaffold(
         topBar = {
@@ -27,7 +27,7 @@ fun AutoSentenceSelectDeleteScreen(
                 onBackClick = onBack,
                 onRightClick = {
                     if (selectedIds.isNotEmpty()) {
-                        showDeleteDialog = true   // ⭐ 바로 삭제 ❌ → 모달 표시
+                        showDeleteDialog = true   // 바로 삭제  → 모달 표시
                     }
                 }
             )

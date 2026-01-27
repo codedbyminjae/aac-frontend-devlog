@@ -46,7 +46,7 @@ fun SelectionIndicator(
             Icon(
                 painter = painterResource(id = R.drawable.ic_check),
                 contentDescription = "선택됨",
-                tint = Color.White,          // 🔥 흰색 체크
+                tint = Color.White,          // 흰색 체크
                 modifier = Modifier.size(30.dp)
             )
         }
@@ -67,7 +67,7 @@ fun SelectableAutoSentenceItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        // ⭕ / ✔ 선택 인디케이터
+        // 선택 인디케이터
         SelectionIndicator(isSelected = isSelected)
 
         Spacer(modifier = Modifier.width(12.dp))

@@ -39,7 +39,7 @@ fun RepeatTypeWheelSelector(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp) // ✅ 클릭 영역 추천값
+                        .height(48.dp) // 클릭 영역 추천값
                         .clickable { onTypeSelected(item.first) },
                     contentAlignment = Alignment.Center
                 ) {

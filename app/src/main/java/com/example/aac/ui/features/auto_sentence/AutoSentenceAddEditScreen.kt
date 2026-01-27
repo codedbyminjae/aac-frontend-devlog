@@ -22,7 +22,7 @@ fun AutoSentenceAddEditScreen(
     initialItem: AutoSentenceItem? = null,
     onBack: () -> Unit,
     onSave: (AutoSentenceItem) -> Unit,
-    onDelete: (() -> Unit)? = null   // ⭐ DELETE 콜백 추가
+    onDelete: (() -> Unit)? = null   // DELETE 콜백 추가
 ) {
 
     /* ---------- 초기 상태 ---------- */
@@ -150,7 +150,7 @@ fun AutoSentenceAddEditScreen(
             ) {
 
                 AutoSentenceOptionCard(
-                    modifier = Modifier.weight(1f),   // ⭐ 동일한 폭
+                    modifier = Modifier.weight(1f),   // 동일한 폭
                     iconRes = R.drawable.ic_recycle,
                     title = "반복 주기",
                     value = repeatText,
@@ -158,7 +158,7 @@ fun AutoSentenceAddEditScreen(
                 )
 
                 AutoSentenceOptionCard(
-                    modifier = Modifier.weight(1f),   // ⭐ 동일한 폭
+                    modifier = Modifier.weight(1f),   // 동일한 폭
                     iconRes = R.drawable.ic_time,
                     title = "시간",
                     value = timeText,

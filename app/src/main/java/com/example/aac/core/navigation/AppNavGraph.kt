@@ -168,7 +168,7 @@ fun AppNavGraph() {
                 autoSentenceList = autoSentenceList,
                 onBack = { navController.popBackStack() },
                 onDeleteSelected = { selectedIds ->
-                    // ✅ 선택된 것만 삭제
+                    // 선택된 것만 삭제
                     autoSentenceList = autoSentenceList.filterNot { selectedIds.contains(it.id) }
                     navController.popBackStack() // 삭제 후 설정 화면으로 복귀
                 }
