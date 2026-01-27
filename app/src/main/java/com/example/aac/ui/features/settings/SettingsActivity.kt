@@ -11,7 +11,10 @@ class SettingsActivity : ComponentActivity() {
         setContent {
             AacTheme {
                 SettingsScreen(
-                    onBackClick = { finish() }
+                    onBackClick = { finish() },
+                    onAutoSentenceSettingClick = {
+                        // Activity에서는 아직 안 씀
+                    }
                 )
             }
         }
