@@ -25,8 +25,10 @@ import com.example.aac.ui.features.settings.components.*
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
+    onAutoSentenceSettingClick: () -> Unit
 ) {
     Scaffold(
+        containerColor = Color(0xFFF2F2F2),
         topBar = {
             SettingsTopBar(onBackClick = onBackClick)
         }
@@ -51,7 +53,7 @@ fun SettingsScreen(
             SettingsQuickActionRow(
                 onCategoryClick = { /* TODO */ },
                 onVoiceClick = { /* TODO */ },
-                onAutoSentenceClick = { /* TODO */ }
+                onAutoSentenceClick = onAutoSentenceSettingClick
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -146,7 +148,7 @@ fun SettingsTopBar(
             Image(
                 painter = painterResource(id = R.drawable.ic_back_circle),
                 contentDescription = "Back",
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(45.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -173,5 +175,8 @@ fun SettingsTopBar(
 )
 @Composable
 fun SettingsScreenPreview() {
-    SettingsScreen(onBackClick = {})
+    SettingsScreen(
+        onBackClick = {},
+        onAutoSentenceSettingClick = {}
+    )
 }
