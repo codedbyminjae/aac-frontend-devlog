@@ -29,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -269,6 +270,7 @@ fun FlashcardEditDialog(
             sheetState = categorySheetState,
             containerColor = Color.White,
             dragHandle = { BottomSheetDefaults.DragHandle() },
+            // [수정 포인트] 시트 자체의 최대 너비를 제한하지 않도록 설정하거나 content에서 조절
             modifier = Modifier.fillMaxWidth()
         ) {
             CategorySelectionContent(
@@ -296,27 +298,35 @@ fun CategorySelectionContent(
     )
 
     val scrollState = rememberScrollState()
+    val paddingLeft = 94.dp
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            // [수정 포인트] 모달 전체 크기를 1280x380으로 고정
+            .width(1280.dp)
+            .height(380.dp)
+            .background(Color.White),
+        horizontalAlignment = Alignment.Start
     ) {
-        // [에러 수정 포인트] padding 안에 horizontal 명시
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // [수정 포인트] 텍스트 중앙 정렬
         Text(
             text = "낱말 카드를 추가할 카테고리를 선택하세요",
-            fontSize = 20.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 32.dp).padding(horizontal = 24.dp)
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth() // 가로 전체를 채워야 중앙 정렬이 보입니다
+                .padding(bottom = 64.dp)
         )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(scrollState)
-                .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                .padding(start = paddingLeft),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
             verticalAlignment = Alignment.CenterVertically
         ) {
             categories.forEach { (name, icon) ->
@@ -326,17 +336,19 @@ fun CategorySelectionContent(
                     icon = icon,
                     isSelected = isSelected,
                     pointBlue = pointBlue,
+                    size = 86.dp,
                     onClick = { onCategorySelected(name) }
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
         Button(
             onClick = onComplete,
             modifier = Modifier
-                .fillMaxWidth(0.9f)
+                .padding(start = paddingLeft, bottom = 40.dp)
+                .width(1092.dp)
                 .height(60.dp),
             colors = ButtonDefaults.buttonColors(containerColor = pointBlue),
             shape = RoundedCornerShape(12.dp),
@@ -353,11 +365,12 @@ fun CategoryButton(
     icon: Int,
     isSelected: Boolean,
     pointBlue: Color,
+    size: androidx.compose.ui.unit.Dp,
     onClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
-            .width(84.dp)
+            .size(size)
             .clip(RoundedCornerShape(12.dp))
             .background(if (isSelected) Color(0xFFE3F2FD) else Color.Transparent)
             .border(
@@ -365,20 +378,20 @@ fun CategoryButton(
                 color = if (isSelected) pointBlue else Color(0xFFEEEEEE),
                 shape = RoundedCornerShape(12.dp)
             )
-            .clickable { onClick() }
-            .padding(vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Icon(
             painter = painterResource(id = icon),
             contentDescription = name,
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier.size(36.dp),
             tint = Color.Unspecified
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = name,
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             color = if (isSelected) pointBlue else Color.Black,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
         )
