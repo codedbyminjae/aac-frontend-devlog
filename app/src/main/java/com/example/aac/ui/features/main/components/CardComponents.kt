@@ -31,38 +31,45 @@ data class CardData(
 
 @Composable
 fun CardsArea(
-    cards: List<CardData>, // 외부에서 현재 페이지의 카드 데이터만 받음
+    cards: List<CardData>,
+    onCardClick: (CardData) -> Unit, // [추가] 클릭 콜백 파라미터
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(7), // 7열 고정
         modifier = modifier.fillMaxSize(),
-        // 상하좌우 패딩 및 아이템 간격 20dp 통일
         contentPadding = PaddingValues(20.dp),
         horizontalArrangement = Arrangement.spacedBy(20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
-        userScrollEnabled = false // 스크롤 비활성화 (버튼으로 페이지 이동)
+        userScrollEnabled = false
     ) {
         items(cards) { card ->
-            CardItemView(card = card)
+            // 각 아이템에 클릭 이벤트 연결
+            CardItemView(
+                card = card,
+                onClick = { onCardClick(card) }
+            )
         }
     }
 }
 
 @Composable
-fun CardItemView(card: CardData) {
+fun CardItemView(
+    card: CardData,
+    onClick: () -> Unit // [추가] 클릭 콜백 파라미터
+) {
     Column(
         modifier = Modifier
             .aspectRatio(1f) // 1:1
             .clip(RoundedCornerShape(8.dp))
             .background(card.bgColor)
-            .clickable { /* 카드 클릭 로직 */ }
+            .clickable { onClick() } // [수정] 전달받은 클릭 로직 실행
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // 이미지 등 내용
-        // Image(...)
+        // 이미지가 있다면 여기에 추가 (현재 주석 처리)
+        // Image(painter = painterResource(id = R.drawable.ic_emotion), contentDescription = null, modifier = Modifier.size(40.dp))
 
         Spacer(modifier = Modifier.height(4.dp))
 
@@ -78,8 +85,8 @@ fun CardItemView(card: CardData) {
 
 @Composable
 fun CardControlBar(
-    onUpClick: () -> Unit,   //위로 버튼 클릭 콜백
-    onDownClick: () -> Unit, // 아래로 버튼 클릭 콜백
+    onUpClick: () -> Unit,
+    onDownClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -90,7 +97,6 @@ fun CardControlBar(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // [위로 버튼] (이전 페이지)
         ControlBox(
             iconRes = R.drawable.btn_up,
             text = "위로",
@@ -98,7 +104,6 @@ fun CardControlBar(
             modifier = Modifier.weight(1f)
         )
 
-        // [아래로 버튼] (다음 페이지)
         ControlBox(
             iconRes = R.drawable.btn_down,
             text = "아래로",
