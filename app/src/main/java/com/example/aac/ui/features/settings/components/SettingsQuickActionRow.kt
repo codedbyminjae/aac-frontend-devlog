@@ -20,7 +20,6 @@ fun SettingsQuickActionRow(
             .padding(horizontal = 24.dp, vertical = 0.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 1. 카테고리 / 낱말 카드 추가
         SettingsQuickActionCard(
             title = "카테고리 / 낱말 카드 추가",
             backgroundColor = Color(0xFFEBF3FF),
@@ -30,7 +29,6 @@ fun SettingsQuickActionRow(
             modifier = Modifier.weight(1f)
         )
 
-        // 2. 목소리 설정
         SettingsQuickActionCard(
             title = "목소리 설정",
             backgroundColor = Color(0xFFFFFBEB),
@@ -40,17 +38,17 @@ fun SettingsQuickActionRow(
             modifier = Modifier.weight(1f)
         )
 
-        // 3. 자동 출력 문장 설정
         SettingsQuickActionCard(
             title = "자동 출력 문장 설정",
             backgroundColor = Color(0xFFEFFAF1),
             clickedColor = Color(0xFFDCF4E0),
             iconRes = R.drawable.ic_calendar,
-            onClick = onAutoSentenceClick,
+            onClick = onAutoSentenceClick,   // 그대로 사용
             modifier = Modifier.weight(1f)
         )
     }
 }
+
 
 @Preview(showBackground = true, widthDp = 1280)
 @Composable
