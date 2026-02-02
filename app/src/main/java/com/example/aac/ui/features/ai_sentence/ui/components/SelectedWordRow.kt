@@ -149,7 +149,7 @@ private fun WordChip(
                 )
                 // ✅ 중앙 X 표시
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_delete),
+                    painter = painterResource(id = R.drawable.ic_trash),
                     contentDescription = "삭제 표시",
                     tint = red,
                     modifier = Modifier
