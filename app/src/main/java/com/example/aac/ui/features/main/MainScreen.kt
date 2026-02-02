@@ -26,7 +26,11 @@ import com.example.aac.ui.features.flashcard_edit_delete.FlashcardEditDialog
 val SideBarGray = Color(0xFF666666)
 
 @Composable
-fun MainScreen(onNavigateToAiSentence: () -> Unit = {}) {
+fun MainScreen(
+    onNavigateToAiSentence: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
+) {
+    // 1. 상태 관리 (현재 선택된 카테고리 인덱스)
     var selectedCategoryIndex by remember { mutableIntStateOf(0) }
     var selectedDetailCard by remember { mutableStateOf<CardData?>(null) }
     var selectedEditCard by remember { mutableStateOf<CardData?>(null) }
@@ -67,34 +71,44 @@ fun MainScreen(onNavigateToAiSentence: () -> Unit = {}) {
     val maxPage = if (allCards.isEmpty()) 0 else (allCards.size - 1) / pageSize
     val currentDisplayCards = allCards.drop(currentPage * pageSize).take(pageSize)
 
-    FlashcardDetailDialog(
-        card = selectedDetailCard,
-        snackbarHostState = snackbarHostState,
-        coroutineScope = coroutineScope,
-        onDismiss = { selectedDetailCard = null },
-        onEdit = { card ->
-            selectedDetailCard = null
-            selectedEditCard = card
-        },
-        onDelete = { card ->
-            selectedDetailCard = null
-        }
-    )
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        // [메인 영역]
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .background(Color(0xFFF8F8F8))
+        ) {
+            // 1. 상단 섹션
+            TopSection(onNavigateToAiSentence = onNavigateToAiSentence)
 
-    FlashcardEditDialog(
-        card = selectedEditCard,
-        onDismiss = { selectedEditCard = null },
-        onSave = { selectedEditCard = null }
-    )
+            // 2. 카테고리 바 + 설정 버튼
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(88.dp)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(15.dp)
+            ) {
+                CategoryBar(
+                    categories = categoryList,
+                    onCategoryClick = { index ->
+                        selectedCategoryIndex = index
+                    },
+                    modifier = Modifier.weight(1f, fill = false)
+                )
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Row(modifier = Modifier.fillMaxSize().background(Color.White)) {
-            Column(modifier = Modifier.weight(1f).fillMaxHeight().background(Color(0xFFF8F8F8))) {
-                TopSection(onNavigateToAiSentence = onNavigateToAiSentence)
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(88.dp).padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(15.dp)
+                Surface(
+                    onClick = { onNavigateToSettings() }, // 수정
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFFEEEEEE),
+                    border = BorderStroke(1.dp, Color(0xFFCCCCCC)),
+                    modifier = Modifier.size(width = 92.dp, height = 68.dp)
                 ) {
                     CategoryBar(categories = categoryList, onCategoryClick = { index -> selectedCategoryIndex = index }, modifier = Modifier.weight(1f, fill = false))
                     Surface(
