@@ -2,8 +2,20 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="aac">
         <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2026-01-20T14:35:41.663072Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/coffeepeanut/.android/avd/Pixel_Tablet.avd" />
+        <DropdownSelection timestamp="2026-01-27T07:40:14.382488Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=R54Y30168HJ" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
       </SelectionState>
     </selectionStates>
   </component>
