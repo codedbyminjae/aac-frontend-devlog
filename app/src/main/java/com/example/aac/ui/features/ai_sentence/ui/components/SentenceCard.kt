@@ -52,7 +52,7 @@ fun SentenceCard(
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SvgButton(
-                    iconRes = R.drawable.ic_edit,
+                    iconRes = R.drawable.ic_edit1,
                     label = "편집",
                     onClick = onEdit,
                     backgroundColor = skyBlue,

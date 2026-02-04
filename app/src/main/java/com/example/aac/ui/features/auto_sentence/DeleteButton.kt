@@ -50,7 +50,7 @@ fun DeleteButton(
         ) {
 
             Icon(
-                painter = painterResource(id = R.drawable.ic_trash),
+                painter = painterResource(id = R.drawable.ic_trash2),
                 contentDescription = "삭제",
                 modifier = Modifier.size(30.dp),
                 tint = Color(0xFFCC3333)

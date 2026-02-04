@@ -13,7 +13,7 @@ import com.example.aac.ui.features.login.LoginScreen
 import com.example.aac.ui.features.settings.SettingsScreen
 import com.example.aac.ui.features.auto_sentence.*
 import com.example.aac.ui.features.auto_sentence.AutoSentenceSelectDeleteScreen
-
+import com.example.aac.ui.features.voice_setting.VoiceSettingScreen
 
 @Composable
 fun AppNavGraph() {
@@ -23,6 +23,9 @@ fun AppNavGraph() {
     var autoSentenceList by remember {
         mutableStateOf(listOf<AutoSentenceItem>())
     }
+
+    // 목소리 설정 정보 반영 데이터
+    var voiceSettingId by remember { mutableStateOf("default_male") }
 
     NavHost(
         navController = navController,
@@ -67,6 +70,22 @@ fun AppNavGraph() {
                 onBackClick = { navController.popBackStack() },
                 onAutoSentenceSettingClick = {
                     navController.navigate(Routes.AUTO_SENTENCE_SETTING)
+                },
+                onVoiceSettingClick = {
+                    navController.navigate(Routes.VOICE_SETTING)
+                }
+            )
+        }
+
+        /* ---------- VOICE SETTING ---------- */
+        composable(Routes.VOICE_SETTING) {
+            VoiceSettingScreen(
+                initialSelectedId = voiceSettingId,
+                onBackClick = { navController.popBackStack() },
+                onSave = { selectedId ->
+                    voiceSettingId = selectedId
+                    // TODO: 나중에 API 저장 연결
+                    // 지금은 아무것도 안 해도 됨
                 }
             )
         }
@@ -107,9 +126,7 @@ fun AppNavGraph() {
                 },
                 autoSentenceList = autoSentenceList
             )
-
         }
-
 
         /* ---------- AUTO SENTENCE ADD ---------- */
         composable(Routes.AUTO_SENTENCE_ADD) {
@@ -159,10 +176,10 @@ fun AppNavGraph() {
                         navController.popBackStack()
                     }
                 )
-
             }
         }
 
+        /* ---------- AUTO SENTENCE SELECT DELETE ---------- */
         composable(Routes.AUTO_SENTENCE_SELECT_DELETE) {
             AutoSentenceSelectDeleteScreen(
                 autoSentenceList = autoSentenceList,
@@ -174,6 +191,5 @@ fun AppNavGraph() {
                 }
             )
         }
-
     }
 }
