@@ -22,7 +22,7 @@ fun AutoSentenceAddEditScreen(
     initialItem: AutoSentenceItem? = null,
     onBack: () -> Unit,
     onSave: (AutoSentenceItem) -> Unit,
-    onDelete: (() -> Unit)? = null   // DELETE 콜백 추가
+    onDelete: (() -> Unit)? = null   // DELETE 콜백
 ) {
 
     /* ---------- 초기 상태 ---------- */
@@ -63,17 +63,14 @@ fun AutoSentenceAddEditScreen(
         mutableStateOf(initialItem != null)
     }
 
-    /* ---------- BottomSheet 상태 ---------- */
+    /* ---------- BottomSheet / Dialog 상태 ---------- */
     var showRepeatSheet by remember { mutableStateOf(false) }
     var showTimeSheet by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
 
     /* ---------- 반복 주기 텍스트 ---------- */
     val repeatText = remember(repeatSetting, isRepeatSelected) {
-        if (!isRepeatSelected) {
-            "선택"
-        } else {
-            repeatSetting.toKoreanText()
-        }
+        if (!isRepeatSelected) "선택" else repeatSetting.toKoreanText()
     }
 
     /* ---------- 시간 텍스트 ---------- */
@@ -94,16 +91,14 @@ fun AutoSentenceAddEditScreen(
         "문장 편집"
     }
 
-    val isFormValid = sentence.isNotBlank()
-            && isRepeatSelected
-            && isTimeSelected
+    val isFormValid =
+        sentence.isNotBlank() && isRepeatSelected && isTimeSelected
 
     val saveButtonColor = if (isFormValid) {
         Color(0xFF1C63A8)
     } else {
-        Color(0xFFB0B0B0) // 비활성 색 (원하면 조정)
+        Color(0xFFB0B0B0)
     }
-
 
     /* ---------- UI ---------- */
     Scaffold(
@@ -150,7 +145,7 @@ fun AutoSentenceAddEditScreen(
             ) {
 
                 AutoSentenceOptionCard(
-                    modifier = Modifier.weight(1f),   // 동일한 폭
+                    modifier = Modifier.weight(1f),
                     iconRes = R.drawable.ic_recycle,
                     title = "반복 주기",
                     value = repeatText,
@@ -158,7 +153,7 @@ fun AutoSentenceAddEditScreen(
                 )
 
                 AutoSentenceOptionCard(
-                    modifier = Modifier.weight(1f),   // 동일한 폭
+                    modifier = Modifier.weight(1f),
                     iconRes = R.drawable.ic_time,
                     title = "시간",
                     value = timeText,
@@ -171,7 +166,9 @@ fun AutoSentenceAddEditScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 DeleteButton(
-                    onClick = onDelete
+                    onClick = {
+                        showDeleteConfirmDialog = true
+                    }
                 )
             }
         }
@@ -196,6 +193,20 @@ fun AutoSentenceAddEditScreen(
                     timeState = newTime
                     isTimeSelected = true
                     showTimeSheet = false
+                }
+            )
+        }
+
+        /* ---------- 삭제 확인 Dialog ---------- */
+        if (showDeleteConfirmDialog) {
+            AutoSentenceDeleteConfirmDialog(
+                message = "문장을\n\n삭제 하시겠어요?",
+                onCancel = {
+                    showDeleteConfirmDialog = false
+                },
+                onConfirm = {
+                    showDeleteConfirmDialog = false
+                    onDelete?.invoke()
                 }
             )
         }

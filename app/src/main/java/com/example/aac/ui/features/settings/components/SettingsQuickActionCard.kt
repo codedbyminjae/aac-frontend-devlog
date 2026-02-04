@@ -57,7 +57,7 @@ fun SettingsQuickActionCard(
             // 좌상단 텍스트
             Text(
                 text = title,
-                fontSize = 20.sp,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF2C2C2C),
                 modifier = Modifier.align(Alignment.TopStart)
@@ -69,7 +69,7 @@ fun SettingsQuickActionCard(
                 contentDescription = title,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .size(40.dp),
+                    .size(54.dp),
                 tint = Color.Unspecified
             )
         }
