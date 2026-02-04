@@ -8,7 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,8 +26,16 @@ import com.example.aac.ui.features.settings.components.*
 fun SettingsScreen(
     onBackClick: () -> Unit,
     onVoiceSettingClick: () -> Unit,
-    onAutoSentenceSettingClick: () -> Unit
+    onAutoSentenceSettingClick: () -> Unit,
+    onLogoutSuccess: () -> Unit = {},
+    onWithdrawSuccess: () -> Unit = {} // 회원탈퇴 이후 이동
 ) {
+    /* =======================
+       Modal States
+    ======================= */
+    var showLogoutModal by remember { mutableStateOf(false) }
+    var showWithdrawModal by remember { mutableStateOf(false) }
+
     Scaffold(
         containerColor = Color(0xFFF2F2F2),
         topBar = {
@@ -50,7 +58,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3개 퀵액션 카드
+            // 퀵 액션
             SettingsQuickActionRow(
                 onCategoryClick = { /* TODO */ },
                 onVoiceClick = onVoiceSettingClick,
@@ -59,9 +67,9 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            /* ==========================================================
-               AAC 설정 섹션
-            ========================================================== */
+            /* =======================
+               AAC 설정
+            ======================= */
             SettingsSection(title = "AAC 설정") {
                 SettingsListItem(
                     iconRes = R.drawable.ic_aac_speak,
@@ -77,9 +85,9 @@ fun SettingsScreen(
                 )
             }
 
-            /* ==========================================================
-               앱 지원 섹션
-            ========================================================== */
+            /* =======================
+               앱 지원
+            ======================= */
             SettingsSection(title = "앱 지원") {
                 SettingsListItem(
                     iconRes = R.drawable.ic_help,
@@ -94,25 +102,53 @@ fun SettingsScreen(
                 )
             }
 
-            /* ==========================================================
-               계정 정보 섹션
-            ========================================================== */
+            /* =======================
+               계정 정보
+            ======================= */
             SettingsSection(title = "계정 정보") {
                 SettingsListItem(
-                    iconRes = R.drawable.ic_logout,
+                    iconRes = R.drawable.ic_logout2,
                     title = "로그아웃",
-                    onClick = { /* TODO */ }
+                    onClick = { showLogoutModal = true }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 SettingsListItem(
                     iconRes = R.drawable.ic_delete_user,
                     title = "회원 탈퇴",
-                    onClick = { /* TODO */ }
+                    onClick = { showWithdrawModal = true }
                 )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+
+    /* =======================
+       Logout Modal
+    ======================= */
+    if (showLogoutModal) {
+        LogoutConfirmModal(
+            onCancel = { showLogoutModal = false },
+            onLogout = {
+                showLogoutModal = false
+                // TODO: 로그아웃 API 연결
+                onLogoutSuccess()
+            }
+        )
+    }
+
+    /* =======================
+       Withdraw Modal
+    ======================= */
+    if (showWithdrawModal) {
+        WithdrawConfirmModal(
+            onCancel = { showWithdrawModal = false },
+            onWithdraw = {
+                showWithdrawModal = false
+                // TODO: 회원탈퇴 API 연결
+                onWithdrawSuccess()
+            }
+        )
     }
 }
 
@@ -129,7 +165,6 @@ fun SettingsTopBar(
             .statusBarsPadding()
             .padding(top = 12.dp, start = 24.dp, end = 24.dp)
     ) {
-        // 중앙 타이틀
         Text(
             text = "설정",
             fontWeight = FontWeight.SemiBold,
@@ -139,7 +174,6 @@ fun SettingsTopBar(
             modifier = Modifier.align(Alignment.Center)
         )
 
-        // 좌측 뒤로가기
         Row(
             modifier = Modifier
                 .align(Alignment.CenterStart)
