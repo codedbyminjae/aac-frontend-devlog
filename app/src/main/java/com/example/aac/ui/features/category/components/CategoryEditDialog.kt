@@ -93,7 +93,7 @@ fun CategoryEditDialog(
                                 modifier = Modifier.padding(end = 10.dp)
                             ) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.ic_edit),
+                                    painter = painterResource(id = R.drawable.ic_edit1),
                                     contentDescription = null,
                                     modifier = Modifier.size(22.dp),
                                     tint = Color.Gray

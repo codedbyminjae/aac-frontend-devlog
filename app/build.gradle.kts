@@ -66,6 +66,5 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation("androidx.compose.runtime:runtime-saveable")
-    implementation(libs.reorderable)
     implementation("sh.calvin.reorderable:reorderable:3.0.0")
 }

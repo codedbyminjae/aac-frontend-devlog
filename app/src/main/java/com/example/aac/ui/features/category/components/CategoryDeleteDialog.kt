@@ -80,7 +80,7 @@ fun CategoryDeleteDialog(
                         elevation = ButtonDefaults.buttonElevation(0.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_trash),
+                            painter = painterResource(id = R.drawable.ic_trash2),
                             contentDescription = null,
                             tint = Color(0xFFCC3333),
                             modifier = Modifier.size(25.dp)

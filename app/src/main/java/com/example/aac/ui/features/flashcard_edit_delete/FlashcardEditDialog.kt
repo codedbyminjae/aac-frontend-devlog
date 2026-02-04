@@ -405,7 +405,7 @@ fun ChangeButton(onClick: () -> Unit) {
         modifier = Modifier.padding(end = 20.dp).clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(painterResource(id = R.drawable.ic_edit), null, Modifier.size(18.dp), grayColor)
+        Icon(painterResource(id = R.drawable.ic_edit1), null, Modifier.size(18.dp), grayColor)
         Spacer(Modifier.width(4.dp))
         Text("변경", fontSize = 14.sp, color = grayColor)
     }

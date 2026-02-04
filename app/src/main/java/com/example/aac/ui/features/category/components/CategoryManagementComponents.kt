@@ -229,7 +229,7 @@ fun CategoryEditListItem(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 EditOptionButton(
                     text = "편집",
-                    icon = painterResource(id = R.drawable.ic_edit),
+                    icon = painterResource(id = R.drawable.ic_edit1),
                     color = Color.White,
                     backgroundColor = Color(0xFF66B3FF),
                     onClick = onEditClick
@@ -237,7 +237,7 @@ fun CategoryEditListItem(
 
                 EditOptionButton(
                     text = "삭제",
-                    icon = painterResource(id = R.drawable.ic_trash),
+                    icon = painterResource(id = R.drawable.ic_trash2),
                     color = Color.White,
                     backgroundColor = Color(0xE5F84D4D),
                     onClick = onDeleteClick
