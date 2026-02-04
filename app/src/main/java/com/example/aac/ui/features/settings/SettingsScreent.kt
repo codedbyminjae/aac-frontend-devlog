@@ -25,6 +25,7 @@ import com.example.aac.ui.features.settings.components.*
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
+    onVoiceSettingClick: () -> Unit,
     onAutoSentenceSettingClick: () -> Unit
 ) {
     Scaffold(
@@ -52,7 +53,7 @@ fun SettingsScreen(
             // 3개 퀵액션 카드
             SettingsQuickActionRow(
                 onCategoryClick = { /* TODO */ },
-                onVoiceClick = { /* TODO */ },
+                onVoiceClick = onVoiceSettingClick,
                 onAutoSentenceClick = onAutoSentenceSettingClick
             )
 
@@ -177,6 +178,7 @@ fun SettingsTopBar(
 fun SettingsScreenPreview() {
     SettingsScreen(
         onBackClick = {},
+        onVoiceSettingClick = {},
         onAutoSentenceSettingClick = {}
     )
 }

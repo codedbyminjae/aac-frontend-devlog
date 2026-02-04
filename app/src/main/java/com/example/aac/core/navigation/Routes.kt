@@ -40,4 +40,7 @@ object Routes {
     // 자동 출력 문장 선택 삭제 화면
     const val AUTO_SENTENCE_SELECT_DELETE = "auto_sentence_select_delete"
 
+    // 목소리 설정 화면
+    const val VOICE_SETTING = "voice_setting"
+
 }

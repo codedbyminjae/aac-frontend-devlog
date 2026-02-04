@@ -14,6 +14,9 @@ class SettingsActivity : ComponentActivity() {
                     onBackClick = { finish() },
                     onAutoSentenceSettingClick = {
                         // Activity에서는 아직 안 씀
+                    },
+                    onVoiceSettingClick = {
+                        // Activity에서는 아직 안 씀
                     }
                 )
             }
