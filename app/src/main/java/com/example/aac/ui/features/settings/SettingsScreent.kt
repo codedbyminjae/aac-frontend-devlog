@@ -27,9 +27,11 @@ fun SettingsScreen(
     onBackClick: () -> Unit,
     onVoiceSettingClick: () -> Unit,
     onAutoSentenceSettingClick: () -> Unit,
-    onUsageHistoryClick: () -> Unit, // ✅ [추가] 사용 기록 화면으로 이동하는 콜백
+    onUsageHistoryClick: () -> Unit,
     onLogoutSuccess: () -> Unit = {},
-    onWithdrawSuccess: () -> Unit = {} // 회원탈퇴 이후 이동
+    onWithdrawSuccess: () -> Unit = {},
+    onCategoryManagementClick: () -> Unit,
+    onSpeakSettingClick: () -> Unit
 ) {
     /* =======================
        Modal States
@@ -61,7 +63,7 @@ fun SettingsScreen(
 
             // 퀵 액션
             SettingsQuickActionRow(
-                onCategoryClick = { /* TODO */ },
+                onCategoryClick = onCategoryManagementClick, // ✅ [수정됨] 클릭 이벤트 연결 완료
                 onVoiceClick = onVoiceSettingClick,
                 onAutoSentenceClick = onAutoSentenceSettingClick
             )
@@ -76,13 +78,13 @@ fun SettingsScreen(
                     iconRes = R.drawable.ic_aac_speak,
                     title = "말하기 화면 설정",
                     rightText = "6월",
-                    onClick = { /* TODO */ }
+                    onClick = onSpeakSettingClick
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 SettingsListItem(
                     iconRes = R.drawable.ic_record,
                     title = "사용 기록 조회",
-                    onClick = onUsageHistoryClick // 콜백 연결
+                    onClick = onUsageHistoryClick
                 )
             }
 
@@ -215,6 +217,8 @@ fun SettingsScreenPreview() {
         onBackClick = {},
         onVoiceSettingClick = {},
         onAutoSentenceSettingClick = {},
-        onUsageHistoryClick = {}
+        onUsageHistoryClick = {},
+        onCategoryManagementClick = {},
+        onSpeakSettingClick = {}
     )
 }

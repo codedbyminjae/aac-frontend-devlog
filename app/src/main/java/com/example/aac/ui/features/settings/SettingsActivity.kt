@@ -24,7 +24,11 @@ class SettingsActivity : ComponentActivity() {
                     onUsageHistoryClick = {
                         val intent = Intent(this, UsageHistoryActivity::class.java)
                         startActivity(intent)
-                    }
+                    },
+
+                    onCategoryManagementClick = {},
+
+                    onSpeakSettingClick = {}
                 )
             }
         }

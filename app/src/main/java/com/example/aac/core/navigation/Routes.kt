@@ -43,4 +43,8 @@ object Routes {
     // 목소리 설정 화면
     const val VOICE_SETTING = "voice_setting"
 
+    const val CATEGORY_MANAGEMENT = "category_management"
+
+    const val SPEAK_SETTING = "speak_setting"
+
 }

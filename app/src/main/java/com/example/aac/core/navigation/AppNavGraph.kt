@@ -16,7 +16,9 @@ import com.example.aac.ui.features.settings.SettingsScreen
 import com.example.aac.ui.features.auto_sentence.*
 import com.example.aac.ui.features.auto_sentence.AutoSentenceSelectDeleteScreen
 import com.example.aac.ui.features.voice_setting.VoiceSettingScreen
-import com.example.aac.ui.features.usage_history.UsageHistoryActivity // [추가] 이동할 액티비티
+import com.example.aac.ui.features.usage_history.UsageHistoryActivity
+import com.example.aac.ui.features.category.CategoryManagementScreen
+import com.example.aac.ui.features.speak_setting.SpeakSettingScreen
 
 @Composable
 fun AppNavGraph() {
@@ -84,6 +86,14 @@ fun AppNavGraph() {
                 onUsageHistoryClick = {
                     val intent = Intent(context, UsageHistoryActivity::class.java)
                     context.startActivity(intent)
+                },
+
+                onCategoryManagementClick = {
+                    navController.navigate(Routes.CATEGORY_MANAGEMENT)
+                },
+
+                onSpeakSettingClick = {
+                    navController.navigate(Routes.SPEAK_SETTING)
                 }
             )
         }
@@ -199,6 +209,18 @@ fun AppNavGraph() {
                     autoSentenceList = autoSentenceList.filterNot { selectedIds.contains(it.id) }
                     navController.popBackStack() // 삭제 후 설정 화면으로 복귀
                 }
+            )
+        }
+
+        composable(Routes.CATEGORY_MANAGEMENT) {
+            CategoryManagementScreen(
+                onBackClick = { navController.popBackStack() },
+            )
+        }
+
+        composable(Routes.SPEAK_SETTING) {
+            SpeakSettingScreen(
+                onBackClick = { navController.popBackStack() }
             )
         }
     }
