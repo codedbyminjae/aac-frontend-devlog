@@ -54,15 +54,16 @@ fun AutoSentenceDeleteConfirmDialog(
 
             Spacer(modifier = Modifier.height(61.dp))
 
-            /* ---------- 버튼 영역 ---------- */
+            /* ---------- 버튼 영역 (리팩토링) ---------- */
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
 
-                // 취소
+                // ---------- 취소 ----------
                 Box(
                     modifier = Modifier
-                        .width(178.dp)
+                        .weight(1f)
                         .height(60.dp)
                         .background(
                             color = Color(0xFFE2E5EA),
@@ -83,10 +84,10 @@ fun AutoSentenceDeleteConfirmDialog(
                     )
                 }
 
-                // 삭제하기
+                // ---------- 삭제하기 ----------
                 Box(
                     modifier = Modifier
-                        .width(178.dp)
+                        .weight(1f)
                         .height(60.dp)
                         .background(
                             color = Color(0xFFE2E5EA),
@@ -100,14 +101,16 @@ fun AutoSentenceDeleteConfirmDialog(
                         .clickable { onConfirm() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_trash2),
                             contentDescription = null,
                             tint = Color(0xFFCC3333),
                             modifier = Modifier.size(32.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "삭제하기",
                             fontSize = 20.sp,
@@ -119,4 +122,3 @@ fun AutoSentenceDeleteConfirmDialog(
         }
     }
 }
-

@@ -33,7 +33,7 @@ fun SettingsQuickActionRow(
             title = "목소리 설정",
             backgroundColor = Color(0xFFFFFBEB),
             clickedColor = Color(0xFFFFF6D1),
-            iconRes = R.drawable.ic_sound,
+            iconRes = R.drawable.ic_sound2,
             onClick = onVoiceClick,
             modifier = Modifier.weight(1f)
         )
