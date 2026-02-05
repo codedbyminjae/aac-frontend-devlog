@@ -28,6 +28,7 @@ import com.example.aac.R
 import com.example.aac.ui.features.speak_setting.components.ColumnCountButton
 import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardData
 import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardItem
+import com.example.aac.ui.features.speak_setting.components.SpeakSettingSaveDialog
 
 data class ContainerStyle(
     val height: Dp,
@@ -43,6 +44,8 @@ fun SpeakSettingScreen(
     onSaveClick: (Int) -> Unit = {}
 ) {
     var selectedColumnCount by remember { mutableIntStateOf(7) }
+
+    var showSaveDialog by remember { mutableStateOf(false) }
 
     val currentStyle = when (selectedColumnCount) {
         7 -> ContainerStyle(
@@ -98,11 +101,21 @@ fun SpeakSettingScreen(
         fullDummyCards.take(countToShow)
     }
 
+    if (showSaveDialog) {
+        SpeakSettingSaveDialog(
+            onDismiss = { showSaveDialog = false },
+            onConfirm = {
+                showSaveDialog = false
+                onSaveClick(selectedColumnCount)
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             SpeakSettingTopBar(
                 onBackClick = onBackClick,
-                onSaveClick = { onSaveClick(selectedColumnCount) }
+                onSaveClick = { showSaveDialog = true }
             )
         },
         containerColor = Color(0xFFF5F5F5)
