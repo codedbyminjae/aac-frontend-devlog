@@ -27,6 +27,7 @@ fun SettingsScreen(
     onBackClick: () -> Unit,
     onVoiceSettingClick: () -> Unit,
     onAutoSentenceSettingClick: () -> Unit,
+    onUsageHistoryClick: () -> Unit, // ✅ [추가] 사용 기록 화면으로 이동하는 콜백
     onLogoutSuccess: () -> Unit = {},
     onWithdrawSuccess: () -> Unit = {} // 회원탈퇴 이후 이동
 ) {
@@ -81,7 +82,7 @@ fun SettingsScreen(
                 SettingsListItem(
                     iconRes = R.drawable.ic_record,
                     title = "사용 기록 조회",
-                    onClick = { /* TODO */ }
+                    onClick = onUsageHistoryClick // 콜백 연결
                 )
             }
 
@@ -213,6 +214,7 @@ fun SettingsScreenPreview() {
     SettingsScreen(
         onBackClick = {},
         onVoiceSettingClick = {},
-        onAutoSentenceSettingClick = {}
+        onAutoSentenceSettingClick = {},
+        onUsageHistoryClick = {}
     )
 }
