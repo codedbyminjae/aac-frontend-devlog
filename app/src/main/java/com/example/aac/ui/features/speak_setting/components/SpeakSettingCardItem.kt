@@ -33,12 +33,13 @@ data class SpeakSettingCardData(
 fun SpeakSettingCardItem(
     card: SpeakSettingCardData,
     cardSize: Dp,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    cardRadius: Dp
 ) {
     Column(
         modifier = modifier
             .size(cardSize)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(cardRadius))
             .background(card.bgColor)
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

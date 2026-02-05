@@ -35,7 +35,8 @@ data class ContainerStyle(
     val paddingHorizontal: Dp,
     val paddingVertical: Dp,
     val cardSize: Dp,
-    val gap: Dp
+    val gap: Dp,
+    val radius: Dp
 )
 
 @Composable
@@ -53,23 +54,26 @@ fun SpeakSettingScreen(
             paddingHorizontal = 43.dp,
             paddingVertical = 23.dp,
             cardSize = 130.dp,
-            gap = 20.dp
+            gap = 20.dp,
+            radius = 12.dp
         )
         4 -> ContainerStyle(
             height = 407.dp,
             paddingHorizontal = 192.dp,
             paddingVertical = 30.dp,
             cardSize = 160.dp,
-            gap = 25.dp
+            gap = 25.dp,
+            radius = 15.dp
         )
         3 -> ContainerStyle(
             height = 370.5.dp,
             paddingHorizontal = 40.dp,
             paddingVertical = 30.dp,
             cardSize = 310.dp,
-            gap = 47.dp
+            gap = 47.dp,
+            radius = 29.dp
         )
-        else -> ContainerStyle(323.dp, 0.dp, 23.dp, 130.dp, 20.dp)
+        else -> ContainerStyle(323.dp, 0.dp, 23.dp, 130.dp, 20.dp, radius = 20.dp)
     }
 
     val fullDummyCards = remember {
@@ -180,7 +184,8 @@ fun SpeakSettingScreen(
                         items(currentDisplayCards) { card ->
                             SpeakSettingCardItem(
                                 card = card,
-                                cardSize = currentStyle.cardSize
+                                cardSize = currentStyle.cardSize,
+                                cardRadius = currentStyle.radius
                             )
                         }
                     }
