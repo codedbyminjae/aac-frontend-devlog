@@ -7,6 +7,14 @@ object Routes {
     /* ---------- 로그인 ---------- */
     const val LOGIN = "login"
 
+    /* ---------- 약관동의 ---------- */
+    const val TERMS = "terms"
+
+    const val TERMS_DETAIL = "terms_detail"
+    const val TERMS_DETAIL_ROUTE = "terms_detail/{type}"
+
+    fun termsDetailRoute(type: String) = "terms_detail/$type"
+
     /* ---------- 메인 ---------- */
     const val MAIN = "main"
 
@@ -42,5 +50,9 @@ object Routes {
 
     // 목소리 설정 화면
     const val VOICE_SETTING = "voice_setting"
+
+    const val CATEGORY_MANAGEMENT = "category_management"
+
+    const val SPEAK_SETTING = "speak_setting"
 
 }

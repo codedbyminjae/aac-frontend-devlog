@@ -1,6 +1,8 @@
 package com.example.aac.core.navigation
 
+import android.content.Intent // [추가] 액티비티 이동용
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext // [추가] 컨텍스트 획득용
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,6 +16,11 @@ import com.example.aac.ui.features.settings.SettingsScreen
 import com.example.aac.ui.features.auto_sentence.*
 import com.example.aac.ui.features.auto_sentence.AutoSentenceSelectDeleteScreen
 import com.example.aac.ui.features.voice_setting.VoiceSettingScreen
+import com.example.aac.ui.features.usage_history.UsageHistoryActivity
+import com.example.aac.ui.features.category.CategoryManagementScreen
+import com.example.aac.ui.features.speak_setting.SpeakSettingScreen
+import com.example.aac.ui.features.terms.TermsDetailScreen
+import com.example.aac.ui.features.terms.TermsScreen
 
 @Composable
 fun AppNavGraph() {
@@ -35,12 +42,61 @@ fun AppNavGraph() {
         /* ---------- LOGIN ---------- */
         composable(Routes.LOGIN) {
             LoginScreen(
-                onKakaoLogin = { navController.navigate(Routes.MAIN) },
-                onNaverLogin = { navController.navigate(Routes.MAIN) },
-                onGoogleLogin = { navController.navigate(Routes.MAIN) },
-                onGuestLogin = { navController.navigate(Routes.MAIN) }
+                onSocialLoginClick = {
+                    // TODO: 나중에 로그인 성공 시 호출
+                    navController.navigate(Routes.TERMS)
+                },
+                onGuestLoginClick = {
+                    navController.navigate(Routes.TERMS)
+                }
             )
         }
+
+        /* ---------- TERMS ---------- */
+        composable(Routes.TERMS) {
+            TermsScreen(
+                navController = navController,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onStartClick = {
+                    navController.navigate(Routes.MAIN) {
+                        popUpTo(Routes.TERMS) { inclusive = true }
+                    }
+                },
+                onServiceTermsClick = {
+                    navController.navigate(
+                        Routes.termsDetailRoute("service")
+                    )
+                },
+                onPrivacyTermsClick = {
+                    navController.navigate(
+                        Routes.termsDetailRoute("privacy")
+                    )
+                }
+            )
+        }
+
+        /* ---------- TERMS DETAIL ---------- */
+        composable(
+            route = Routes.TERMS_DETAIL_ROUTE,
+            arguments = listOf(navArgument("type") { type = NavType.StringType })
+        ) { backStackEntry ->
+
+            val type = backStackEntry.arguments?.getString("type") ?: "service"
+
+            TermsDetailScreen(
+                type = type,
+                onBackClick = { agreed ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("terms_result_$type", agreed)
+
+                    navController.popBackStack()
+                }
+            )
+        }
+
 
         /* ---------- MAIN ---------- */
         composable(Routes.MAIN) {
@@ -66,6 +122,9 @@ fun AppNavGraph() {
 
         /* ---------- SETTINGS ---------- */
         composable(Routes.SETTINGS) {
+            // [수정됨] 액티비티 실행을 위해 Context 가져오기
+            val context = LocalContext.current
+
             SettingsScreen(
                 onBackClick = { navController.popBackStack() },
                 onAutoSentenceSettingClick = {
@@ -73,6 +132,19 @@ fun AppNavGraph() {
                 },
                 onVoiceSettingClick = {
                     navController.navigate(Routes.VOICE_SETTING)
+                },
+                // [추가됨] 사용 기록 조회 클릭 시 -> UsageHistoryActivity 실행
+                onUsageHistoryClick = {
+                    val intent = Intent(context, UsageHistoryActivity::class.java)
+                    context.startActivity(intent)
+                },
+
+                onCategoryManagementClick = {
+                    navController.navigate(Routes.CATEGORY_MANAGEMENT)
+                },
+
+                onSpeakSettingClick = {
+                    navController.navigate(Routes.SPEAK_SETTING)
                 }
             )
         }
@@ -85,7 +157,6 @@ fun AppNavGraph() {
                 onSave = { selectedId ->
                     voiceSettingId = selectedId
                     // TODO: 나중에 API 저장 연결
-                    // 지금은 아무것도 안 해도 됨
                 }
             )
         }
@@ -189,6 +260,18 @@ fun AppNavGraph() {
                     autoSentenceList = autoSentenceList.filterNot { selectedIds.contains(it.id) }
                     navController.popBackStack() // 삭제 후 설정 화면으로 복귀
                 }
+            )
+        }
+
+        composable(Routes.CATEGORY_MANAGEMENT) {
+            CategoryManagementScreen(
+                onBackClick = { navController.popBackStack() },
+            )
+        }
+
+        composable(Routes.SPEAK_SETTING) {
+            SpeakSettingScreen(
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

@@ -1,23 +1,20 @@
-package com.example.aac
+package com.example.aac.ui.features.usage_history
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import com.example.aac.core.navigation.AppNavGraph
 import com.example.aac.ui.theme.AacTheme
 
-class MainActivity : ComponentActivity() {
+class UsageHistoryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        enableEdgeToEdge()
-
         setContent {
             AacTheme {
-                AppNavGraph()
+                // 아까 만든 화면 컴포저블을 여기서 띄웁니다
+                UsageHistoryScreen(
+                    onBackClick = { finish() } // 뒤로가기 누르면 액티비티 종료
+                )
             }
         }
     }
 }
-
