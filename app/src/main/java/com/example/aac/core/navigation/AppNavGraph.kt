@@ -39,13 +39,9 @@ fun AppNavGraph() {
 
         /* ---------- LOGIN ---------- */
         composable(Routes.LOGIN) {
-            LoginScreen(
-                onKakaoLogin = { navController.navigate(Routes.MAIN) },
-                onNaverLogin = { navController.navigate(Routes.MAIN) },
-                onGoogleLogin = { navController.navigate(Routes.MAIN) },
-                onGuestLogin = { navController.navigate(Routes.MAIN) }
-            )
+            LoginScreen()
         }
+
 
         /* ---------- MAIN ---------- */
         composable(Routes.MAIN) {

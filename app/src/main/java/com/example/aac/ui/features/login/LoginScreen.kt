@@ -1,288 +1,174 @@
 package com.example.aac.ui.features.login
 
-import android.content.res.Configuration
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Divider
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
 
-/* ======================================================
-   UI Constants
-   - 로그인 화면에서 공통으로 사용하는 값들
-   ====================================================== */
-private const val LANDSCAPE_BUTTON_WIDTH = 560
+// Figma 기준 상단 여백 (1280 x 720 기준)
+private const val TITLE_TOP_PADDING_DP = 136
 
-/* ======================================================
-   LoginScreen
-   - 로그인 화면 진입점
-   - 화면 방향에 따라 가로/세로 레이아웃 분기
-   ====================================================== */
+// 버튼 공통 스펙
+private val BUTTON_WIDTH = 560.dp
+private val BUTTON_HEIGHT = 64.dp
+private val BUTTON_RADIUS = 5.dp
+
 @Composable
-fun LoginScreen(
-    onKakaoLogin: () -> Unit,
-    onNaverLogin: () -> Unit,
-    onGoogleLogin: () -> Unit,
-    onGuestLogin: () -> Unit
-) {
-    val configuration = LocalConfiguration.current
-    val isLandscape =
-        configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-    if (isLandscape) {
-        LoginLandscape(
-            onKakaoLogin,
-            onNaverLogin,
-            onGoogleLogin,
-            onGuestLogin
-        )
-    } else {
-        LoginPortrait(
-            onKakaoLogin,
-            onNaverLogin,
-            onGoogleLogin,
-            onGuestLogin
-        )
-    }
-}
-
-// LoginLandscape - 가로 화면 전용 로그인 UI
-@Composable
-private fun LoginLandscape(
-    onKakaoLogin: () -> Unit,
-    onNaverLogin: () -> Unit,
-    onGoogleLogin: () -> Unit,
-    onGuestLogin: () -> Unit
-) {
+fun LoginScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-            Text(
-                text = "모두와 AAC",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Image(
-                painter = painterResource(R.drawable.ic_app_logo),
-                contentDescription = "App Logo",
-                modifier = Modifier.size(72.dp)
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            LoginImageButton(
-                drawableRes = R.drawable.ic_kakao_login_button_land,
-                modifier = Modifier.width(LANDSCAPE_BUTTON_WIDTH.dp),
-                onClick = onKakaoLogin
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            LoginImageButton(
-                drawableRes = R.drawable.ic_naver_login_button_land,
-                modifier = Modifier.width(LANDSCAPE_BUTTON_WIDTH.dp),
-                onClick = onNaverLogin
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            LoginImageButton(
-                drawableRes = R.drawable.ic_google_login_button_land,
-                modifier = Modifier.width(LANDSCAPE_BUTTON_WIDTH.dp),
-                onClick = onGoogleLogin
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            LoginImageButton(
-                drawableRes = R.drawable.ic_guest_login_button_land,
-                modifier = Modifier.width(LANDSCAPE_BUTTON_WIDTH.dp),
-                onClick = onGuestLogin
-            )
-        }
-    }
-}
-
-// LoginPortrait - 세로 화면 전용 로그인 UI
-@Composable
-private fun LoginPortrait(
-    onKakaoLogin: () -> Unit,
-    onNaverLogin: () -> Unit,
-    onGoogleLogin: () -> Unit,
-    onGuestLogin: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        contentAlignment = Alignment.Center
+            .background(Color.White)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .align(Alignment.TopCenter)
+                .padding(top = TITLE_TOP_PADDING_DP.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Text(
-                text = "사용자의 맥락을 이해하는 똑똑한 AI AAC",
-                fontSize = 13.sp,
-                color = Color(0xFF2678C8),
+                text = "모두와 AAC",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "모두와 AAC",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Image(
-                painter = painterResource(R.drawable.ic_app_logo),
-                contentDescription = "App Logo",
-                modifier = Modifier.size(120.dp)
+                painter = painterResource(id = R.drawable.ic_logo),
+                contentDescription = null,
+                modifier = Modifier.size(91.dp)
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(31.dp))
 
-            LoginDivider()
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            LoginImageButton(
-                drawableRes = R.drawable.ic_kakao_login_button_port,
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onKakaoLogin
+            // 카카오
+            LoginButton(
+                text = "카카오로 시작하기",
+                backgroundColor = Color(0xFFFEE500),
+                pressedBackgroundColor = Color(0xFFCCB800),
+                textColor = Color(0xFF191600),
+                iconRes = R.drawable.ic_kakao
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(9.dp))
 
-            LoginImageButton(
-                drawableRes = R.drawable.ic_naver_login_button_port,
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onNaverLogin
+            // 네이버
+            LoginButton(
+                text = "네이버로 시작하기",
+                backgroundColor = Color(0xFF03C75A),
+                pressedBackgroundColor = Color(0xFF029744),
+                textColor = Color.White,
+                iconRes = R.drawable.ic_naver
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(9.dp))
 
-            LoginImageButton(
-                drawableRes = R.drawable.ic_google_login_button_port,
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onGoogleLogin
+            // 구글
+            LoginButton(
+                text = "구글로 시작하기",
+                backgroundColor = Color(0xFFF2F2F2),
+                pressedBackgroundColor = Color(0xFFD9D9D9),
+                textColor = Color(0xFF666666),
+                borderColor = Color(0xFFACACAC),
+                iconRes = R.drawable.ic_google
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(9.dp))
 
-            LoginImageButton(
-                drawableRes = R.drawable.ic_guest_login_button_port,
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onGuestLogin
+            // 로그인 없이 바로 시작하기
+            LoginButton(
+                text = "로그인 없이 바로 시작하기",
+                backgroundColor = Color.White,
+                pressedBackgroundColor = Color(0xFFBECDE0),
+                textColor = Color(0xFF1C63A8),
+                borderColor = Color(0xFF1C63A8)
             )
         }
     }
 }
 
-/* ======================================================
-   LoginDivider
-   - 세로 화면 로그인 영역 구분용
-   ====================================================== */
 @Composable
-private fun LoginDivider() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Divider(
-            modifier = Modifier.weight(1f),
-            color = Color(0xFF7E7E7E)
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Text(
-            text = "로그인/회원가입",
-            fontSize = 13.sp,
-            color = Color(0xFF7E7E7E)
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Divider(
-            modifier = Modifier.weight(1f),
-            color = Color(0xFF7E7E7E)
-        )
-    }
-}
-
-/* ======================================================
-   LoginImageButton
-   - 공통 로그인 이미지 버튼
-   - orientation에 따라 ContentScale만 분기
-   ====================================================== */
-@Composable
-private fun LoginImageButton(
-    @DrawableRes drawableRes: Int,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
+private fun LoginButton(
+    text: String,
+    backgroundColor: Color,
+    pressedBackgroundColor: Color,
+    textColor: Color,
+    borderColor: Color? = null,
+    iconRes: Int? = null
 ) {
-    val configuration = LocalConfiguration.current
-    val isPortrait =
-        configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
 
-    Image(
-        painter = painterResource(drawableRes),
-        contentDescription = null,
-        contentScale = if (isPortrait) {
-            ContentScale.FillWidth
-        } else {
-            ContentScale.Fit
-        },
-        modifier = modifier
+    val currentBackgroundColor =
+        if (isPressed) pressedBackgroundColor else backgroundColor
+
+    Box(
+        modifier = Modifier
+            .width(BUTTON_WIDTH)
+            .height(BUTTON_HEIGHT)
             .then(
-                if (isPortrait) Modifier.wrapContentHeight() else Modifier
+                if (borderColor != null) {
+                    Modifier.border(
+                        width = 2.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(BUTTON_RADIUS)
+                    )
+                } else Modifier
             )
-            .clickable(onClick = onClick)
-    )
-}
+            .background(
+                color = currentBackgroundColor,
+                shape = RoundedCornerShape(BUTTON_RADIUS)
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
+                /* 나중에 연결 */
+            }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
 
-/* ======================================================
-   Preview
-   ====================================================== */
-@Preview(widthDp = 800, heightDp = 360, showBackground = true)
-@Composable
-fun LoginLandscapePreview() {
-    LoginScreen({}, {}, {}, {})
-}
+            if (iconRes != null) {
+                Image(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
 
-@Preview(showBackground = true)
-@Composable
-fun LoginPortraitPreview() {
-    LoginScreen({}, {}, {}, {})
+                Spacer(modifier = Modifier.width(10.dp))
+            }
+
+            Text(
+                text = text,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = textColor
+            )
+        }
+    }
 }
