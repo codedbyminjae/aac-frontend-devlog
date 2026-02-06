@@ -19,6 +19,8 @@ import com.example.aac.ui.features.voice_setting.VoiceSettingScreen
 import com.example.aac.ui.features.usage_history.UsageHistoryActivity
 import com.example.aac.ui.features.category.CategoryManagementScreen
 import com.example.aac.ui.features.speak_setting.SpeakSettingScreen
+import com.example.aac.ui.features.terms.TermsDetailScreen
+import com.example.aac.ui.features.terms.TermsScreen
 
 @Composable
 fun AppNavGraph() {
@@ -41,27 +43,59 @@ fun AppNavGraph() {
         composable(Routes.LOGIN) {
             LoginScreen(
                 onSocialLoginClick = {
-                    // 카카오 / 네이버 / 구글 공통
+                    // TODO: 나중에 로그인 성공 시 호출
                     navController.navigate(Routes.TERMS)
                 },
                 onGuestLoginClick = {
-                    // 로그인 없이 바로 시작하기
-                    navController.navigate(Routes.MAIN) {
-                        popUpTo(Routes.LOGIN) { inclusive = true }
-                    }
+                    navController.navigate(Routes.TERMS)
                 }
             )
         }
 
         /* ---------- TERMS ---------- */
         composable(Routes.TERMS) {
-            // TODO: TermsScreen 구현 후 교체
-            // TermsScreen(
-            //     onAgree = { navController.navigate(Routes.MAIN) },
-            //     onBack = { navController.popBackStack() }
-            // )
+            TermsScreen(
+                navController = navController,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onStartClick = {
+                    navController.navigate(Routes.MAIN) {
+                        popUpTo(Routes.TERMS) { inclusive = true }
+                    }
+                },
+                onServiceTermsClick = {
+                    navController.navigate(
+                        Routes.termsDetailRoute("service")
+                    )
+                },
+                onPrivacyTermsClick = {
+                    navController.navigate(
+                        Routes.termsDetailRoute("privacy")
+                    )
+                }
+            )
         }
 
+        /* ---------- TERMS DETAIL ---------- */
+        composable(
+            route = Routes.TERMS_DETAIL_ROUTE,
+            arguments = listOf(navArgument("type") { type = NavType.StringType })
+        ) { backStackEntry ->
+
+            val type = backStackEntry.arguments?.getString("type") ?: "service"
+
+            TermsDetailScreen(
+                type = type,
+                onBackClick = { agreed ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("terms_result_$type", agreed)
+
+                    navController.popBackStack()
+                }
+            )
+        }
 
 
         /* ---------- MAIN ---------- */

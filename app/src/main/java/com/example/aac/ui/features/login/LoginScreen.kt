@@ -104,8 +104,8 @@ fun LoginScreen(
             // 로그인 없이 바로 시작하기
             LoginButton(
                 text = "로그인 없이 바로 시작하기",
-                backgroundColor = Color.White,
-                pressedBackgroundColor = Color(0xFFBECDE0),
+                backgroundColor = Color(0xFFFFFFFF),
+                pressedBackgroundColor = Color(0xFFE5E7E9),
                 textColor = Color(0xFF1C63A8),
                 borderColor = Color(0xFF1C63A8),
                 onClick = onGuestLoginClick
