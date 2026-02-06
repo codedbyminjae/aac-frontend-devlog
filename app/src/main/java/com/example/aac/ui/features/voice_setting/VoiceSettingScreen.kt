@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonSaveDialog
 
 @Composable
 fun VoiceSettingScreen(
@@ -39,17 +40,6 @@ fun VoiceSettingScreen(
     BackHandler {
         if (hasChanges) showSaveDialog = true
         else onBackClick()
-    }
-
-    if (showSaveDialog) {
-        VoiceSaveDialog(
-            onCancel = { showSaveDialog = false },
-            onSave = {
-                showSaveDialog = false
-                onSave(selectedId)
-                onBackClick()
-            }
-        )
     }
 
     Scaffold(
@@ -88,5 +78,17 @@ fun VoiceSettingScreen(
                 )
             }
         }
+    }
+
+    if (showSaveDialog) {
+        CommonSaveDialog(
+            message = "변경사항을\n저장하시겠어요?",
+            onDismiss = { showSaveDialog = false },
+            onSave = {
+                showSaveDialog = false
+                onSave(selectedId)
+                onBackClick()
+            }
+        )
     }
 }

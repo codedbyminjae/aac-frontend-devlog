@@ -3,24 +3,24 @@ package com.example.aac.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.aac.R
 
 @Composable
-fun CommonDeleteDialog(
-    message: String,
+fun CommonSaveDialog(
+    message: String = "변경사항을\n저장 하시겠어요?",
     onDismiss: () -> Unit,
-    onDelete: () -> Unit
+    onSave: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -68,8 +68,8 @@ fun CommonDeleteDialog(
                     }
 
                     Button(
-                        onClick = onDelete,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCC3333)),
+                        onClick = onSave,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0088FF)),
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, Color(0xFFD9D9D9)),
                         modifier = Modifier
@@ -77,14 +77,9 @@ fun CommonDeleteDialog(
                             .height(60.dp),
                         elevation = ButtonDefaults.buttonElevation(0.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_trash),
-                            contentDescription = null,
-                            modifier = Modifier.size(25.dp)
-                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "삭제하기",
+                            text = "저장",
                             color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Normal

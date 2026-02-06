@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.aac.R
@@ -14,22 +15,15 @@ import com.example.aac.ui.features.category.components.*
 import sh.calvin.reorderable.*
 
 @Composable
-fun CategoryManagementContent() {
+fun CategoryManagementContent(
+    categoryList: SnapshotStateList<CategoryEditData>
+) {
     // 모달 상태
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf<CategoryEditData?>(null) }
+    var showAddDialog by remember { mutableStateOf(false) } // 추가 모달 상태
 
-    val categoryList = remember {
-        mutableStateListOf(
-            CategoryEditData(iconRes = R.drawable.ic_default, title = "기본", count = 5),
-            CategoryEditData(iconRes = R.drawable.ic_human, title = "사람", count = 13),
-            CategoryEditData(iconRes = R.drawable.ic_act, title = "행동", count = 13),
-            CategoryEditData(iconRes = R.drawable.ic_place, title = "장소", count = 8),
-            CategoryEditData(iconRes = R.drawable.ic_emotion, title = "감정", count = 12),
-            CategoryEditData(iconRes = R.drawable.ic_food, title = "음식", count = 20)
-        )
-    }
+    var selectedCategory by remember { mutableStateOf<CategoryEditData?>(null) }
 
     val listState = rememberLazyListState()
 
@@ -61,7 +55,7 @@ fun CategoryManagementContent() {
 
         item {
             Spacer(modifier = Modifier.height(8.dp))
-            AddCategoryButton(onClick = { /* 추가 로직 */ })
+            AddCategoryButton(onClick = { showAddDialog = true })
             Spacer(modifier = Modifier.height(8.dp))
         }
 
@@ -84,6 +78,31 @@ fun CategoryManagementContent() {
                 )
             }
         }
+    }
+
+    if (showAddDialog) {
+        val dummyData = CategoryEditData(
+            id = "",
+            title = "",
+            iconRes = R.drawable.ic_default,
+            count = 0
+        )
+
+        CategoryEditDialog(
+            category = dummyData,
+            onDismissRequest = { showAddDialog = false },
+            onSaveClick = { name, icon ->
+                categoryList.add(
+                    CategoryEditData(
+                        id = System.currentTimeMillis().toString(),
+                        title = name,
+                        iconRes = icon,
+                        count = 0
+                    )
+                )
+                showAddDialog = false
+            }
+        )
     }
 
     if (showEditDialog && selectedCategory != null) {

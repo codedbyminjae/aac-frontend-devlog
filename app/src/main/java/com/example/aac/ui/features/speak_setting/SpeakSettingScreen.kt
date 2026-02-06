@@ -1,5 +1,6 @@
 package com.example.aac.ui.features.speak_setting
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,11 +21,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
-import com.example.aac.ui.components.CustomTopBar // ✅ [New] 공통 컴포넌트 import
+import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonSaveDialog
 import com.example.aac.ui.features.speak_setting.components.ColumnCountButton
 import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardData
 import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardItem
-import com.example.aac.ui.features.speak_setting.components.SpeakSettingSaveDialog
 
 data class ContainerStyle(
     val height: Dp,
@@ -40,36 +41,18 @@ fun SpeakSettingScreen(
     onBackClick: () -> Unit = {},
     onSaveClick: (Int) -> Unit = {}
 ) {
-    var selectedColumnCount by remember { mutableIntStateOf(7) }
+    val initialValue = 7
 
+    var selectedColumnCount by remember { mutableIntStateOf(initialValue) }
     var showSaveDialog by remember { mutableStateOf(false) }
 
+    val hasChanges = selectedColumnCount != initialValue
+
     val currentStyle = when (selectedColumnCount) {
-        7 -> ContainerStyle(
-            height = 323.dp,
-            paddingHorizontal = 43.dp,
-            paddingVertical = 23.dp,
-            cardSize = 130.dp,
-            gap = 20.dp,
-            radius = 12.dp
-        )
-        4 -> ContainerStyle(
-            height = 407.dp,
-            paddingHorizontal = 192.dp,
-            paddingVertical = 30.dp,
-            cardSize = 160.dp,
-            gap = 25.dp,
-            radius = 15.dp
-        )
-        3 -> ContainerStyle(
-            height = 370.5.dp,
-            paddingHorizontal = 40.dp,
-            paddingVertical = 30.dp,
-            cardSize = 310.dp,
-            gap = 47.dp,
-            radius = 29.dp
-        )
-        else -> ContainerStyle(323.dp, 0.dp, 23.dp, 130.dp, 20.dp, radius = 20.dp)
+        7 -> ContainerStyle(323.dp, 43.dp, 23.dp, 130.dp, 20.dp, 12.dp)
+        4 -> ContainerStyle(407.dp, 192.dp, 30.dp, 160.dp, 25.dp, 15.dp)
+        3 -> ContainerStyle(370.5.dp, 40.dp, 30.dp, 310.dp, 47.dp, 29.dp)
+        else -> ContainerStyle(323.dp, 0.dp, 23.dp, 130.dp, 20.dp, 20.dp)
     }
 
     val fullDummyCards = remember {
@@ -101,12 +84,22 @@ fun SpeakSettingScreen(
         fullDummyCards.take(countToShow)
     }
 
+    BackHandler {
+        if (hasChanges) {
+            showSaveDialog = true
+        } else {
+            onBackClick()
+        }
+    }
+
     if (showSaveDialog) {
-        SpeakSettingSaveDialog(
+        CommonSaveDialog(
+            message = "변경사항을\n저장하시겠어요?",
             onDismiss = { showSaveDialog = false },
-            onConfirm = {
-                showSaveDialog = false
+            onSave = {
                 onSaveClick(selectedColumnCount)
+                showSaveDialog = false
+                onBackClick()
             }
         )
     }
@@ -115,9 +108,15 @@ fun SpeakSettingScreen(
         topBar = {
             CustomTopBar(
                 title = "말하기 화면 설정",
-                onBackClick = onBackClick,
+                onBackClick = {
+                    if (hasChanges) showSaveDialog = true
+                    else onBackClick()
+                },
                 actionText = "저장하기",
-                onActionClick = { showSaveDialog = true }
+                onActionClick = {
+                    onSaveClick(selectedColumnCount)
+                    onBackClick()
+                }
             )
         },
         containerColor = Color(0xFFF4F4F4)
@@ -193,7 +192,6 @@ fun SpeakSettingScreen(
         }
     }
 }
-
 
 @Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=240")
 @Composable

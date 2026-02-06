@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,12 +41,14 @@ data class WordCardData(
 )
 
 @Composable
-fun WordCardManagementContent() {
+fun WordCardManagementContent(
+    wordList: SnapshotStateList<WordCardData>
+) {
     var showAddDialog by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
-    var selectedCategoryName by remember { mutableStateOf("최근사용") }
-
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    var selectedCategoryName by remember { mutableStateOf("최근사용") }
     var selectedWord by remember { mutableStateOf<WordCardData?>(null) }
 
     val categoryList = remember {
@@ -59,21 +62,8 @@ fun WordCardManagementContent() {
         )
     }
 
-    val wordList = remember {
-        mutableStateListOf(
-            WordCardData("ADD_BUTTON", "낱말 추가", Color.White),
-            WordCardData("1", "먹다", Color(0xFFC8E6C9)),
-            WordCardData("2", "가다", Color(0xFFC8E6C9)),
-            WordCardData("3", "크다", Color(0xFFBBDEFB)),
-            WordCardData("4", "학교", Color(0xFFFFE0B2)),
-            WordCardData("5", "위", Color(0xFFE1BEE7)),
-            WordCardData("6", "아래", Color(0xFFE1BEE7)),
-            WordCardData("7", "나", Color(0xFFFFF9C4)),
-            WordCardData("8", "너", Color(0xFFFFF9C4))
-        )
-    }
-
     val gridState = rememberLazyGridState()
+
     val reorderableState = rememberReorderableLazyGridState(gridState) { from, to ->
         if (from.index == 0 || to.index == 0) return@rememberReorderableLazyGridState
 
