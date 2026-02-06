@@ -7,6 +7,9 @@ object Routes {
     /* ---------- 로그인 ---------- */
     const val LOGIN = "login"
 
+    /* ---------- 약관동의 ---------- */
+    const val TERMS = "terms"
+
     /* ---------- 메인 ---------- */
     const val MAIN = "main"
 

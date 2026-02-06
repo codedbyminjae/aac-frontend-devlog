@@ -39,8 +39,29 @@ fun AppNavGraph() {
 
         /* ---------- LOGIN ---------- */
         composable(Routes.LOGIN) {
-            LoginScreen()
+            LoginScreen(
+                onSocialLoginClick = {
+                    // 카카오 / 네이버 / 구글 공통
+                    navController.navigate(Routes.TERMS)
+                },
+                onGuestLoginClick = {
+                    // 로그인 없이 바로 시작하기
+                    navController.navigate(Routes.MAIN) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                }
+            )
         }
+
+        /* ---------- TERMS ---------- */
+        composable(Routes.TERMS) {
+            // TODO: TermsScreen 구현 후 교체
+            // TermsScreen(
+            //     onAgree = { navController.navigate(Routes.MAIN) },
+            //     onBack = { navController.popBackStack() }
+            // )
+        }
+
 
 
         /* ---------- MAIN ---------- */

@@ -31,7 +31,10 @@ private val BUTTON_HEIGHT = 64.dp
 private val BUTTON_RADIUS = 5.dp
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    onSocialLoginClick: () -> Unit,
+    onGuestLoginClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -67,7 +70,8 @@ fun LoginScreen() {
                 backgroundColor = Color(0xFFFEE500),
                 pressedBackgroundColor = Color(0xFFCCB800),
                 textColor = Color(0xFF191600),
-                iconRes = R.drawable.ic_kakao
+                iconRes = R.drawable.ic_kakao,
+                onClick = onSocialLoginClick
             )
 
             Spacer(modifier = Modifier.height(9.dp))
@@ -78,7 +82,8 @@ fun LoginScreen() {
                 backgroundColor = Color(0xFF03C75A),
                 pressedBackgroundColor = Color(0xFF029744),
                 textColor = Color.White,
-                iconRes = R.drawable.ic_naver
+                iconRes = R.drawable.ic_naver,
+                onClick = onSocialLoginClick
             )
 
             Spacer(modifier = Modifier.height(9.dp))
@@ -90,7 +95,8 @@ fun LoginScreen() {
                 pressedBackgroundColor = Color(0xFFD9D9D9),
                 textColor = Color(0xFF666666),
                 borderColor = Color(0xFFACACAC),
-                iconRes = R.drawable.ic_google
+                iconRes = R.drawable.ic_google,
+                onClick = onSocialLoginClick
             )
 
             Spacer(modifier = Modifier.height(9.dp))
@@ -101,7 +107,8 @@ fun LoginScreen() {
                 backgroundColor = Color.White,
                 pressedBackgroundColor = Color(0xFFBECDE0),
                 textColor = Color(0xFF1C63A8),
-                borderColor = Color(0xFF1C63A8)
+                borderColor = Color(0xFF1C63A8),
+                onClick = onGuestLoginClick
             )
         }
     }
@@ -114,7 +121,8 @@ private fun LoginButton(
     pressedBackgroundColor: Color,
     textColor: Color,
     borderColor: Color? = null,
-    iconRes: Int? = null
+    iconRes: Int? = null,
+    onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -141,10 +149,9 @@ private fun LoginButton(
             )
             .clickable(
                 interactionSource = interactionSource,
-                indication = null
-            ) {
-                /* 나중에 연결 */
-            }
+                indication = null,
+                onClick = onClick
+            )
             .padding(horizontal = 16.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
