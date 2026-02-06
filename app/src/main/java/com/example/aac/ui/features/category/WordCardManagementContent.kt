@@ -27,14 +27,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
-// 컴포넌트 import 확인 (패키지 경로가 다르면 수정해주세요)
+import com.example.aac.ui.components.CommonDeleteDialog
 import com.example.aac.ui.features.category.components.AddWordCardDialog
 import com.example.aac.ui.features.category.components.CategorySelectionBottomSheet
 import com.example.aac.ui.features.category.components.TipBox
-
 import sh.calvin.reorderable.*
 
-// 낱말 카드 데이터 모델
 data class WordCardData(
     val id: String,
     val title: String,
@@ -43,12 +41,13 @@ data class WordCardData(
 
 @Composable
 fun WordCardManagementContent() {
-    // [상태 관리]
     var showAddDialog by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
     var selectedCategoryName by remember { mutableStateOf("최근사용") }
 
-    // 바텀 시트에 보여줄 카테고리 데이터
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedWord by remember { mutableStateOf<WordCardData?>(null) }
+
     val categoryList = remember {
         listOf(
             CategoryEditData(iconRes = R.drawable.ic_default, title = "최근사용", count = 0),
@@ -60,7 +59,6 @@ fun WordCardManagementContent() {
         )
     }
 
-    // 낱말 카드 리스트
     val wordList = remember {
         mutableStateListOf(
             WordCardData("ADD_BUTTON", "낱말 추가", Color.White),
@@ -90,7 +88,6 @@ fun WordCardManagementContent() {
         }
     }
 
-    // [전체 레이아웃]
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -103,12 +100,10 @@ fun WordCardManagementContent() {
                 .fillMaxHeight()
                 .padding(vertical = 16.dp)
         ) {
-            // 1. 팁 박스
             TipBox(text = "팁 : 낱말 카드를 드래그하여 순서를 변경하실 수 있어요. 자주 사용하는 낱말을 쉽게 찾을 수 있는 위치에 배치해보세요!")
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. 카테고리 선택 바
             CategorySelectorBar(
                 currentCategory = selectedCategoryName,
                 onClick = { showCategorySheet = true }
@@ -116,7 +111,6 @@ fun WordCardManagementContent() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. 낱말 카드 리스트 영역
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,10 +128,8 @@ fun WordCardManagementContent() {
                 ) {
                     items(wordList, key = { it.id }) { item ->
                         if (item.id == "ADD_BUTTON") {
-                            // 추가 버튼
                             AddWordCardItem(onClick = { showAddDialog = true })
                         } else {
-                            // 드래그 가능한 낱말 카드 아이템
                             ReorderableItem(state = reorderableState, key = item.id) { isDragging ->
                                 val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp, label = "elevation")
 
@@ -146,7 +138,11 @@ fun WordCardManagementContent() {
                                         .aspectRatio(1f)
                                         .shadow(elevation, RoundedCornerShape(12.dp))
                                         .background(item.color, RoundedCornerShape(12.dp))
-                                        .draggableHandle(),
+                                        .draggableHandle()
+                                        .clickable {
+                                            selectedWord = item
+                                            showDeleteDialog = true
+                                        },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Column(
@@ -160,7 +156,7 @@ fun WordCardManagementContent() {
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.Dashboard, // 필요시 이미지 리소스로 변경
+                                                imageVector = Icons.Default.Dashboard,
                                                 contentDescription = null,
                                                 tint = Color.Black.copy(alpha = 0.7f),
                                                 modifier = Modifier.size(20.dp)
@@ -183,12 +179,10 @@ fun WordCardManagementContent() {
         }
     }
 
-    // [다이얼로그 & 바텀 시트 호출]
     if (showAddDialog) {
         AddWordCardDialog(
             onDismissRequest = { showAddDialog = false },
             onSaveClick = { newWord ->
-                // 임시 ID 생성 및 추가
                 wordList.add(
                     WordCardData(
                         id = System.currentTimeMillis().toString(),
@@ -202,7 +196,6 @@ fun WordCardManagementContent() {
     }
 
     if (showCategorySheet) {
-        // 분리된 컴포넌트 사용
         CategorySelectionBottomSheet(
             categoryList = categoryList,
             onDismissRequest = { showCategorySheet = false },
@@ -212,9 +205,18 @@ fun WordCardManagementContent() {
             }
         )
     }
-}
 
-// 내부 사용 컴포넌트
+    if (showDeleteDialog && selectedWord != null) {
+        CommonDeleteDialog(
+            message = "낱말 카드를\n삭제 하시겠어요?",
+            onDismiss = { showDeleteDialog = false },
+            onDelete = {
+                wordList.remove(selectedWord)
+                showDeleteDialog = false
+            }
+        )
+    }
+}
 
 @Composable
 fun AddWordCardItem(onClick: () -> Unit) {

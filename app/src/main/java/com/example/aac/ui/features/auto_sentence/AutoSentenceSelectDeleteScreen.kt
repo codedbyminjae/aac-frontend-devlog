@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonDeleteDialog
 
 @Composable
 fun AutoSentenceSelectDeleteScreen(
@@ -69,14 +70,14 @@ fun AutoSentenceSelectDeleteScreen(
         }
     }
 
-    /* ---------- 선택 삭제 확인 모달 ---------- */
+    /* ---------- 공통 삭제 확인 모달 적용 ---------- */
     if (showDeleteDialog) {
-        AutoSentenceDeleteConfirmDialog(
-            message = "선택한 문장을\n\n삭제 하시겠어요?",
-            onCancel = {
+        CommonDeleteDialog(
+            message = "선택한 문장을\n삭제 하시겠어요?",
+            onDismiss = {
                 showDeleteDialog = false
             },
-            onConfirm = {
+            onDelete = {
                 onDeleteSelected(selectedIds)
                 showDeleteDialog = false
             }

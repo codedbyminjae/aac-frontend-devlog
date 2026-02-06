@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonDeleteDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,7 +97,7 @@ fun AutoSentenceSettingScreen(
                 Column(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(end = 24.dp) // 우측 여백
+                        .padding(end = 24.dp)
                         .width(137.dp)
                         .background(Color.White, RoundedCornerShape(12.dp))
                         .border(
@@ -120,12 +121,12 @@ fun AutoSentenceSettingScreen(
     }
 
     if (showDeleteAllDialog) {
-        AutoSentenceDeleteConfirmDialog(
-            message = "자동 출력 문장을\n\n모두 삭제 하시겠어요?",
-            onCancel = {
+        CommonDeleteDialog(
+            message = "자동 출력 문장을\n모두 삭제 하시겠어요?",
+            onDismiss = {
                 showDeleteAllDialog = false
             },
-            onConfirm = {
+            onDelete = {
                 onDeleteAll()
                 showDeleteAllDialog = false
             }

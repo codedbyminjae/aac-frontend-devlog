@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
 import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonDeleteDialog
 import com.example.aac.ui.features.usage_history.components.UsageHistoryDatePicker
 import com.example.aac.ui.features.usage_history.components.UsageHistoryItem
-import com.example.aac.ui.features.usage_history.components.UsageHistoryDeleteDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,11 +74,8 @@ fun UsageHistoryScreen(
 
                 CustomTopBar(
                     title = "사용 기록 조회",
-
                     actionText = if (isSelectionMode) "삭제하기" else "더보기",
-
                     actionColor = if (isSelectionMode) Color(0xFFFF4B4B) else Color.Black,
-
                     onBackClick = {
                         if (isSelectionMode) {
                             isSelectionMode = false
@@ -87,7 +84,6 @@ fun UsageHistoryScreen(
                             onBackClick()
                         }
                     },
-
                     onActionClick = {
                         if (isSelectionMode) {
                             if (selectedIds.isNotEmpty()) {
@@ -226,14 +222,14 @@ fun UsageHistoryScreen(
         }
 
         if (showDeleteConfirmDialog) {
-            UsageHistoryDeleteDialog(
+            CommonDeleteDialog(
                 message = if (isDeleteAllMode) {
                     "${selectedMonth}월 사용 기록을\n모두 삭제 하시겠어요?"
                 } else {
                     "선택한 사용 기록을\n삭제 하시겠어요?"
                 },
                 onDismiss = { showDeleteConfirmDialog = false },
-                onConfirm = {
+                onDelete = {
                     if (isDeleteAllMode) {
                         historyList.clear()
                     } else {

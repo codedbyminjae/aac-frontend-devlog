@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.aac.R
 import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonDeleteDialog
 import com.example.aac.ui.features.auto_sentence.repeat.*
 import com.example.aac.ui.features.auto_sentence.time.TimePickerBottomSheet
 import com.example.aac.ui.features.auto_sentence.time.TimeState
@@ -201,12 +202,10 @@ fun AutoSentenceAddEditScreen(
 
         /* ---------- 삭제 확인 Dialog ---------- */
         if (showDeleteConfirmDialog) {
-            AutoSentenceDeleteConfirmDialog(
-                message = "문장을\n\n삭제 하시겠어요?",
-                onCancel = {
-                    showDeleteConfirmDialog = false
-                },
-                onConfirm = {
+            CommonDeleteDialog(
+                message = "문장을\n삭제 하시겠어요?",
+                onDismiss = { showDeleteConfirmDialog = false },
+                onDelete = {
                     showDeleteConfirmDialog = false
                     onDelete?.invoke()
                 }

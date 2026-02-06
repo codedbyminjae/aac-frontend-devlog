@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.aac.R
+import com.example.aac.ui.components.CommonDeleteDialog
 import com.example.aac.ui.features.category.components.*
 import sh.calvin.reorderable.*
 
@@ -85,7 +86,6 @@ fun CategoryManagementContent() {
         }
     }
 
-    // 모달들
     if (showEditDialog && selectedCategory != null) {
         CategoryEditDialog(
             category = selectedCategory!!,
@@ -101,9 +101,10 @@ fun CategoryManagementContent() {
     }
 
     if (showDeleteDialog && selectedCategory != null) {
-        CategoryDeleteDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            onDeleteClick = {
+        CommonDeleteDialog(
+            message = "카테고리를\n삭제 하시겠어요?",
+            onDismiss = { showDeleteDialog = false },
+            onDelete = {
                 categoryList.remove(selectedCategory)
                 showDeleteDialog = false
             }
