@@ -30,17 +30,28 @@ fun CustomTopBar(
     actions: (@Composable () -> Unit)? = null
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(123.dp)
                 .background(Color(0xFFF0F0F0))
-                .padding(horizontal = 88.dp),
-            verticalAlignment = Alignment.Top
         ) {
-
-             Row(
+            Text(
+                text = title,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 66.dp)
+                    .fillMaxWidth()
+            )
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = 88.dp)
                     .padding(top = 62.dp)
                     .width(120.dp)
                     .height(45.dp)
@@ -67,25 +78,10 @@ fun CustomTopBar(
 
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(top = 62.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                Text(
-                    text = title,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.Black,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
-
-            Box(
-                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 88.dp)
                     .padding(top = 72.dp),
-                contentAlignment = Alignment.TopEnd
+                contentAlignment = Alignment.CenterEnd
             ) {
                 if (actions != null) {
                     actions()
@@ -107,12 +103,10 @@ fun CustomTopBar(
                             modifier = Modifier.fillMaxSize()
                         )
                     }
-                } else {
-                    Spacer(modifier = Modifier.width(63.dp))
                 }
             }
         }
 
-        HorizontalDivider(color = Color(0xFFDCDCDC), thickness = 2.dp)
+        HorizontalDivider(color = Color(0xFFDCDCDC), thickness = 1.dp)
     }
 }

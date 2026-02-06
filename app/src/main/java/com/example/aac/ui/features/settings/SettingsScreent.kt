@@ -1,24 +1,17 @@
 package com.example.aac.ui.features.settings
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.aac.R
+import com.example.aac.ui.components.CustomTopBar
 import com.example.aac.ui.features.settings.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,16 +26,17 @@ fun SettingsScreen(
     onCategoryManagementClick: () -> Unit,
     onSpeakSettingClick: () -> Unit
 ) {
-    /* =======================
-       Modal States
-    ======================= */
+
     var showLogoutModal by remember { mutableStateOf(false) }
     var showWithdrawModal by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = Color(0xFFF2F2F2),
         topBar = {
-            SettingsTopBar(onBackClick = onBackClick)
+            CustomTopBar(
+                title = "설정",
+                onBackClick = onBackClick
+            )
         }
     ) { innerPadding ->
         Column(
@@ -53,7 +47,6 @@ fun SettingsScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 계정 카드
             SettingsAccountCard(
                 email = "moduwa@naver.com",
                 subscriptionStatus = "프리미엄 구독"
@@ -61,18 +54,14 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 퀵 액션
             SettingsQuickActionRow(
-                onCategoryClick = onCategoryManagementClick, // ✅ [수정됨] 클릭 이벤트 연결 완료
+                onCategoryClick = onCategoryManagementClick,
                 onVoiceClick = onVoiceSettingClick,
                 onAutoSentenceClick = onAutoSentenceSettingClick
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            /* =======================
-               AAC 설정
-            ======================= */
             SettingsSection(title = "AAC 설정") {
                 SettingsListItem(
                     iconRes = R.drawable.ic_aac_speak,
@@ -88,9 +77,6 @@ fun SettingsScreen(
                 )
             }
 
-            /* =======================
-               앱 지원
-            ======================= */
             SettingsSection(title = "앱 지원") {
                 SettingsListItem(
                     iconRes = R.drawable.ic_help,
@@ -105,9 +91,6 @@ fun SettingsScreen(
                 )
             }
 
-            /* =======================
-               계정 정보
-            ======================= */
             SettingsSection(title = "계정 정보") {
                 SettingsListItem(
                     iconRes = R.drawable.ic_logout2,
@@ -126,9 +109,6 @@ fun SettingsScreen(
         }
     }
 
-    /* =======================
-       Logout Modal
-    ======================= */
     if (showLogoutModal) {
         LogoutConfirmModal(
             onCancel = { showLogoutModal = false },
@@ -140,9 +120,6 @@ fun SettingsScreen(
         )
     }
 
-    /* =======================
-       Withdraw Modal
-    ======================= */
     if (showWithdrawModal) {
         WithdrawConfirmModal(
             onCancel = { showWithdrawModal = false },
@@ -155,55 +132,6 @@ fun SettingsScreen(
     }
 }
 
-/* ======================================================
-   SettingsTopBar
-   ====================================================== */
-@Composable
-fun SettingsTopBar(
-    onBackClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(top = 12.dp, start = 24.dp, end = 24.dp)
-    ) {
-        Text(
-            text = "설정",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 28.sp,
-            color = Color(0xFF2C2C2C),
-            textAlign = TextAlign.Center,
-            modifier = Modifier.align(Alignment.Center)
-        )
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .clickable(onClick = onBackClick),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_back_circle),
-                contentDescription = "Back",
-                modifier = Modifier.size(45.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = "뒤로가기",
-                fontWeight = FontWeight.Normal,
-                fontSize = 18.sp,
-                color = Color(0xFF373737)
-            )
-        }
-    }
-}
-
-/* ======================================================
-   Preview
-   ====================================================== */
 @Preview(
     name = "Settings Landscape (1280x1086)",
     showBackground = true,
