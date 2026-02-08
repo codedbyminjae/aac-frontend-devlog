@@ -1,17 +1,14 @@
 package com.example.aac.ui.features.speak_setting
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,16 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
+import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonSaveDialog
 import com.example.aac.ui.features.speak_setting.components.ColumnCountButton
 import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardData
 import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardItem
-import com.example.aac.ui.features.speak_setting.components.SpeakSettingSaveDialog
 
 data class ContainerStyle(
     val height: Dp,
@@ -44,36 +41,18 @@ fun SpeakSettingScreen(
     onBackClick: () -> Unit = {},
     onSaveClick: (Int) -> Unit = {}
 ) {
-    var selectedColumnCount by remember { mutableIntStateOf(7) }
+    val initialValue = 7
 
+    var selectedColumnCount by remember { mutableIntStateOf(initialValue) }
     var showSaveDialog by remember { mutableStateOf(false) }
 
+    val hasChanges = selectedColumnCount != initialValue
+
     val currentStyle = when (selectedColumnCount) {
-        7 -> ContainerStyle(
-            height = 323.dp,
-            paddingHorizontal = 43.dp,
-            paddingVertical = 23.dp,
-            cardSize = 130.dp,
-            gap = 20.dp,
-            radius = 12.dp
-        )
-        4 -> ContainerStyle(
-            height = 407.dp,
-            paddingHorizontal = 192.dp,
-            paddingVertical = 30.dp,
-            cardSize = 160.dp,
-            gap = 25.dp,
-            radius = 15.dp
-        )
-        3 -> ContainerStyle(
-            height = 370.5.dp,
-            paddingHorizontal = 40.dp,
-            paddingVertical = 30.dp,
-            cardSize = 310.dp,
-            gap = 47.dp,
-            radius = 29.dp
-        )
-        else -> ContainerStyle(323.dp, 0.dp, 23.dp, 130.dp, 20.dp, radius = 20.dp)
+        7 -> ContainerStyle(323.dp, 43.dp, 23.dp, 130.dp, 20.dp, 12.dp)
+        4 -> ContainerStyle(407.dp, 192.dp, 30.dp, 160.dp, 25.dp, 15.dp)
+        3 -> ContainerStyle(370.5.dp, 40.dp, 30.dp, 310.dp, 47.dp, 29.dp)
+        else -> ContainerStyle(323.dp, 0.dp, 23.dp, 130.dp, 20.dp, 20.dp)
     }
 
     val fullDummyCards = remember {
@@ -105,24 +84,42 @@ fun SpeakSettingScreen(
         fullDummyCards.take(countToShow)
     }
 
+    BackHandler {
+        if (hasChanges) {
+            showSaveDialog = true
+        } else {
+            onBackClick()
+        }
+    }
+
     if (showSaveDialog) {
-        SpeakSettingSaveDialog(
+        CommonSaveDialog(
+            message = "변경사항을\n저장하시겠어요?",
             onDismiss = { showSaveDialog = false },
-            onConfirm = {
-                showSaveDialog = false
+            onSave = {
                 onSaveClick(selectedColumnCount)
+                showSaveDialog = false
+                onBackClick()
             }
         )
     }
 
     Scaffold(
         topBar = {
-            SpeakSettingTopBar(
-                onBackClick = onBackClick,
-                onSaveClick = { showSaveDialog = true }
+            CustomTopBar(
+                title = "말하기 화면 설정",
+                onBackClick = {
+                    if (hasChanges) showSaveDialog = true
+                    else onBackClick()
+                },
+                actionText = "저장하기",
+                onActionClick = {
+                    onSaveClick(selectedColumnCount)
+                    onBackClick()
+                }
             )
         },
-        containerColor = Color(0xFFF5F5F5)
+        containerColor = Color(0xFFF4F4F4)
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -193,71 +190,6 @@ fun SpeakSettingScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
-    }
-}
-
-@Composable
-fun SpeakSettingTopBar(
-    onBackClick: () -> Unit,
-    onSaveClick: () -> Unit
-) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(123.dp)
-                .background(Color(0xFFF0F0F0))
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 24.dp),
-            verticalAlignment = Alignment.Bottom
-        ) {
-            Row(
-                modifier = Modifier.clickable(onClick = onBackClick),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(45.dp)
-                        .background(Color(0xFF66B3FF), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "뒤로가기",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("뒤로가기", color = Color.Black, fontSize = 18.sp)
-            }
-
-            Text(
-                text = "말하기 화면 설정",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.Black,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
-
-            TextButton(
-                onClick = onSaveClick,
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Text(
-                    "저장하기",
-                    color = Color(0xFF1C63A8),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Normal
-                )
-            }
-        }
-
-        HorizontalDivider(
-            color = Color(0xFFDCDCDC),
-            thickness = 1.dp
-        )
     }
 }
 

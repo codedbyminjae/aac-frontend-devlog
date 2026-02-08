@@ -17,6 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonDeleteDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,7 +27,7 @@ fun AutoSentenceSettingScreen(
     onAddClick: () -> Unit,
     onEditClick: (AutoSentenceItem) -> Unit,
     onSelectDeleteClick: () -> Unit,
-    onDeleteAll: () -> Unit,                 // 전체 삭제 콜백 추가
+    onDeleteAll: () -> Unit,
     autoSentenceList: List<AutoSentenceItem>
 ) {
     var showMoreMenu by rememberSaveable { mutableStateOf(false) }
@@ -34,11 +36,15 @@ fun AutoSentenceSettingScreen(
     Scaffold(
         containerColor = Color(0xFFF2F2F2),
         topBar = {
-            CommonTopBar(
+            CustomTopBar(
                 title = "자동 출력 문장 설정",
-                rightText = "더보기",
                 onBackClick = onBack,
-                onRightClick = { showMoreMenu = !showMoreMenu }
+
+                actionText = "더보기",
+                actionColor = Color.Black,
+                onActionClick = {
+                    showMoreMenu = !showMoreMenu
+                }
             )
         }
     ) { innerPadding ->
@@ -57,12 +63,10 @@ fun AutoSentenceSettingScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // ➕ 문장 추가
                 AutoSentenceAddButton(onClick = onAddClick)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 📋 자동 출력 문장 리스트
                 if (autoSentenceList.isEmpty()) {
                     Text(
                         text = "등록된 문장이 없습니다.",
@@ -80,9 +84,7 @@ fun AutoSentenceSettingScreen(
                 }
             }
 
-            /* ---------- 더보기 메뉴 ---------- */
             if (showMoreMenu) {
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -118,24 +120,20 @@ fun AutoSentenceSettingScreen(
         }
     }
 
-    /* ---------- 전체 삭제 확인 모달 ---------- */
     if (showDeleteAllDialog) {
-        AutoSentenceDeleteConfirmDialog(
-            message = "자동 출력 문장을\n\n모두 삭제 하시겠어요?",
-            onCancel = {
+        CommonDeleteDialog(
+            message = "자동 출력 문장을\n모두 삭제 하시겠어요?",
+            onDismiss = {
                 showDeleteAllDialog = false
             },
-            onConfirm = {
-                onDeleteAll()               // 실제 전체 삭제
+            onDelete = {
+                onDeleteAll()
                 showDeleteAllDialog = false
             }
         )
     }
 }
 
-/* ======================================================
-   더보기 메뉴 아이템
-   ====================================================== */
 @Composable
 fun MoreMenuItem(
     text: String,

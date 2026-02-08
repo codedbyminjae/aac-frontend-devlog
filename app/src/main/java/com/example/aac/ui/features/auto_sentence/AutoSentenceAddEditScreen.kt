@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.aac.R
+import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonDeleteDialog
 import com.example.aac.ui.features.auto_sentence.repeat.*
 import com.example.aac.ui.features.auto_sentence.time.TimePickerBottomSheet
 import com.example.aac.ui.features.auto_sentence.time.TimeState
@@ -22,7 +24,7 @@ fun AutoSentenceAddEditScreen(
     initialItem: AutoSentenceItem? = null,
     onBack: () -> Unit,
     onSave: (AutoSentenceItem) -> Unit,
-    onDelete: (() -> Unit)? = null   // DELETE 콜백
+    onDelete: (() -> Unit)? = null
 ) {
 
     /* ---------- 초기 상태 ---------- */
@@ -104,20 +106,21 @@ fun AutoSentenceAddEditScreen(
     Scaffold(
         containerColor = Color(0xFFF2F2F2),
         topBar = {
-            CommonTopBar(
+            CustomTopBar(
                 title = titleText,
-                rightText = "저장하기",
-                rightTextColor = saveButtonColor,
                 onBackClick = onBack,
-                onRightClick = {
-                    if (!isFormValid) return@CommonTopBar
 
-                    val item = AutoSentenceItem(
-                        sentence = sentence,
-                        repeatSetting = repeatSetting,
-                        timeState = timeState
-                    )
-                    onSave(item)
+                actionText = "저장하기",
+                actionColor = saveButtonColor,
+                onActionClick = {
+                    if (isFormValid) {
+                        val item = AutoSentenceItem(
+                            sentence = sentence,
+                            repeatSetting = repeatSetting,
+                            timeState = timeState
+                        )
+                        onSave(item)
+                    }
                 }
             )
         }
@@ -199,12 +202,10 @@ fun AutoSentenceAddEditScreen(
 
         /* ---------- 삭제 확인 Dialog ---------- */
         if (showDeleteConfirmDialog) {
-            AutoSentenceDeleteConfirmDialog(
-                message = "문장을\n\n삭제 하시겠어요?",
-                onCancel = {
-                    showDeleteConfirmDialog = false
-                },
-                onConfirm = {
+            CommonDeleteDialog(
+                message = "문장을\n삭제 하시겠어요?",
+                onDismiss = { showDeleteConfirmDialog = false },
+                onDelete = {
                     showDeleteConfirmDialog = false
                     onDelete?.invoke()
                 }
