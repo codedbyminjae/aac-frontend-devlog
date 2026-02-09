@@ -1,6 +1,5 @@
 package com.example.aac.ui.features.speak_setting
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,12 +19,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.aac.R
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.WordCard
 import com.example.aac.ui.components.CommonSaveDialog
 import com.example.aac.ui.features.speak_setting.components.ColumnCountButton
-import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardData
-import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardItem
 
 data class ContainerStyle(
     val height: Dp,
@@ -38,15 +36,14 @@ data class ContainerStyle(
 
 @Composable
 fun SpeakSettingScreen(
+    viewModel: SpeakSettingViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSaveClick: (Int) -> Unit = {}
 ) {
-    val initialValue = 7
+    val wordList by viewModel.uiState.collectAsState()
 
-    var selectedColumnCount by remember { mutableIntStateOf(initialValue) }
+    var selectedColumnCount by remember { mutableIntStateOf(7) }
     var showSaveDialog by remember { mutableStateOf(false) }
-
-    val hasChanges = selectedColumnCount != initialValue
 
     val currentStyle = when (selectedColumnCount) {
         7 -> ContainerStyle(323.dp, 43.dp, 23.dp, 130.dp, 20.dp, 12.dp)
@@ -55,51 +52,23 @@ fun SpeakSettingScreen(
         else -> ContainerStyle(323.dp, 0.dp, 23.dp, 130.dp, 20.dp, 20.dp)
     }
 
-    val fullDummyCards = remember {
-        listOf(
-            SpeakSettingCardData("나", R.drawable.ic_launcher_foreground, Color(0xFFFFF9C4)),
-            SpeakSettingCardData("먹다", R.drawable.ic_launcher_foreground, Color(0xFFC8E6C9)),
-            SpeakSettingCardData("가다", R.drawable.ic_launcher_foreground, Color(0xFFC8E6C9)),
-            SpeakSettingCardData("크다", R.drawable.ic_launcher_foreground, Color(0xFFBBDEFB)),
-            SpeakSettingCardData("학교", R.drawable.ic_launcher_foreground, Color(0xFFFFE0B2)),
-            SpeakSettingCardData("위", R.drawable.ic_launcher_foreground, Color(0xFFE1BEE7)),
-            SpeakSettingCardData("아래", R.drawable.ic_launcher_foreground, Color(0xFFE1BEE7)),
-            SpeakSettingCardData("나", R.drawable.ic_launcher_foreground, Color(0xFFFFF9C4)),
-            SpeakSettingCardData("먹다", R.drawable.ic_launcher_foreground, Color(0xFFC8E6C9)),
-            SpeakSettingCardData("가다", R.drawable.ic_launcher_foreground, Color(0xFFC8E6C9)),
-            SpeakSettingCardData("크다", R.drawable.ic_launcher_foreground, Color(0xFFBBDEFB)),
-            SpeakSettingCardData("학교", R.drawable.ic_launcher_foreground, Color(0xFFFFE0B2)),
-            SpeakSettingCardData("위", R.drawable.ic_launcher_foreground, Color(0xFFE1BEE7)),
-            SpeakSettingCardData("아래", R.drawable.ic_launcher_foreground, Color(0xFFE1BEE7))
-        )
-    }
-
-    val currentDisplayCards = remember(selectedColumnCount) {
+    val currentDisplayCards = remember(selectedColumnCount, wordList) {
         val countToShow = when (selectedColumnCount) {
             7 -> 14
             4 -> 8
             3 -> 3
             else -> 14
         }
-        fullDummyCards.take(countToShow)
-    }
-
-    BackHandler {
-        if (hasChanges) {
-            showSaveDialog = true
-        } else {
-            onBackClick()
-        }
+        if (wordList.isNotEmpty()) wordList.take(countToShow) else emptyList()
     }
 
     if (showSaveDialog) {
         CommonSaveDialog(
-            message = "변경사항을\n저장하시겠어요?",
+            message = "설정을 저장하시겠습니까?",
             onDismiss = { showSaveDialog = false },
             onSave = {
-                onSaveClick(selectedColumnCount)
                 showSaveDialog = false
-                onBackClick()
+                onSaveClick(selectedColumnCount)
             }
         )
     }
@@ -108,15 +77,9 @@ fun SpeakSettingScreen(
         topBar = {
             CustomTopBar(
                 title = "말하기 화면 설정",
-                onBackClick = {
-                    if (hasChanges) showSaveDialog = true
-                    else onBackClick()
-                },
+                onBackClick = onBackClick,
                 actionText = "저장하기",
-                onActionClick = {
-                    onSaveClick(selectedColumnCount)
-                    onBackClick()
-                }
+                onActionClick = { showSaveDialog = true }
             )
         },
         containerColor = Color(0xFFF4F4F4)
@@ -144,9 +107,7 @@ fun SpeakSettingScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(53.dp),
+                    modifier = Modifier.fillMaxWidth().height(53.dp),
                     horizontalArrangement = Arrangement.spacedBy(50.dp)
                 ) {
                     ColumnCountButton("7열", selectedColumnCount == 7, { selectedColumnCount = 7 }, Modifier.weight(1f))
@@ -171,19 +132,26 @@ fun SpeakSettingScreen(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(selectedColumnCount),
-                        horizontalArrangement = Arrangement.spacedBy(currentStyle.gap),
-                        verticalArrangement = Arrangement.spacedBy(currentStyle.gap),
-                        userScrollEnabled = false,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(currentDisplayCards) { card ->
-                            SpeakSettingCardItem(
-                                card = card,
-                                cardSize = currentStyle.cardSize,
-                                cardRadius = currentStyle.radius
-                            )
+                    if (wordList.isEmpty()) {
+                        CircularProgressIndicator()
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(selectedColumnCount),
+                            horizontalArrangement = Arrangement.spacedBy(currentStyle.gap),
+                            verticalArrangement = Arrangement.spacedBy(currentStyle.gap),
+                            userScrollEnabled = false,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(currentDisplayCards) { wordItem ->
+                                WordCard(
+                                    text = wordItem.word,
+                                    imageUrl = wordItem.imageUrl,
+                                    partOfSpeech = wordItem.partOfSpeech,
+                                    modifier = Modifier.size(currentStyle.cardSize),
+                                    cornerRadius = currentStyle.radius,
+                                    onClick = { }
+                                )
+                            }
                         }
                     }
                 }
@@ -191,10 +159,4 @@ fun SpeakSettingScreen(
             }
         }
     }
-}
-
-@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=240")
-@Composable
-fun SpeakSettingScreenPreview() {
-    SpeakSettingScreen()
 }
