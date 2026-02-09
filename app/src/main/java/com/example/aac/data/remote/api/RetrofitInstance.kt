@@ -1,6 +1,9 @@
 package com.example.aac.data.remote.api
 
+import android.content.Context
 import com.example.aac.BuildConfig
+import com.example.aac.data.local.TokenDataStore
+import com.example.aac.data.local.TokenProvider
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -8,12 +11,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
-    // 1. local.properties에 숨겨둔 URL 가져오기
-    private val BASE_URL = BuildConfig.BASE_URL
 
-    // 2. 클라이언트 설정
+    private lateinit var appContext: Context
+
+    fun init(context: Context) {
+        appContext = context.applicationContext
+    }
+
     private val client: OkHttpClient by lazy {
-        // 로그 찍는 기능
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) {
                 HttpLoggingInterceptor.Level.BODY
@@ -22,19 +27,22 @@ object RetrofitInstance {
             }
         }
 
+        // 🔑 여기 핵심
+        val tokenDataStore = TokenDataStore(appContext)
+        val tokenProvider = TokenProvider(tokenDataStore)
+
         OkHttpClient.Builder()
-            .addInterceptor(AuthInterceptor())
+            .addInterceptor(AuthInterceptor(tokenProvider))
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS) // 30초 동안 응답 없으면 에러
+            .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 
-    // 3. Retrofit 생성
     val api: AacApiService by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
