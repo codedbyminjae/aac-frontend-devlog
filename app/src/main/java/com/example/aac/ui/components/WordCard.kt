@@ -1,5 +1,6 @@
 package com.example.aac.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,9 +30,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.aac.R
-import java.net.URLEncoder // [필수] 인코더 임포트
+import java.net.URLEncoder
 
-// 배경색 결정 함수
 fun getBackgroundColorByPartOfSpeech(partOfSpeech: String): Color {
     return when (partOfSpeech) {
         "NOUN" -> Color(0xFFFFE099)
@@ -69,6 +69,8 @@ fun WordCard(
     val backgroundColor = getBackgroundColorByPartOfSpeech(partOfSpeech)
 
     val safeImageUrl = remember(imageUrl) { getSafeUrl(imageUrl) }
+
+    Log.e("IMAGE_TEST", "변환된 URL: $safeImageUrl")
 
     Column(
         modifier = modifier
