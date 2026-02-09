@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
 
+
 // Figma 기준 상단 여백 (1280 x 720 기준)
 private const val TITLE_TOP_PADDING_DP = 136
 
