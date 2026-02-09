@@ -21,6 +21,7 @@ import com.example.aac.ui.features.category.CategoryManagementScreen
 import com.example.aac.ui.features.speak_setting.SpeakSettingScreen
 import com.example.aac.ui.features.terms.TermsDetailScreen
 import com.example.aac.ui.features.terms.TermsScreen
+import com.example.aac.ui.features.login.LoginRoute
 
 @Composable
 fun AppNavGraph() {
@@ -41,12 +42,8 @@ fun AppNavGraph() {
 
         /* ---------- LOGIN ---------- */
         composable(Routes.LOGIN) {
-            LoginScreen(
-                onSocialLoginClick = {
-                    // TODO: 나중에 로그인 성공 시 호출
-                    navController.navigate(Routes.TERMS)
-                },
-                onGuestLoginClick = {
+            LoginRoute(
+                onNavigateToTerms = {
                     navController.navigate(Routes.TERMS)
                 }
             )
