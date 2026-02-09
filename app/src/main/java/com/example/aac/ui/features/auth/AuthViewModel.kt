@@ -29,6 +29,7 @@ class AuthViewModel(
                 val deviceId = getDeviceId()
                 Log.d("AuthTest", "deviceId = $deviceId")
 
+                // 로그인 API 호출
                 val response = RetrofitInstance.api.createGuestAccount(
                     GuestLoginRequest(deviceId = deviceId)
                 )
@@ -36,9 +37,13 @@ class AuthViewModel(
                 Log.d("AuthTest", "API response success: ${response.success}")
 
                 if (response.success) {
-                    _loginState.value = response.toLoginState()
+                    val loginState = response.toLoginState()
 
-                    Log.d("AuthTest", "LoginState updated: ${_loginState.value}")
+                    RetrofitInstance.tokenDataStore.saveAccessToken(loginState.accessToken)
+
+                    Log.d("AuthTest", "토큰 저장 완료! (이제 401 안 뜸): ${loginState.accessToken}")
+
+                    _loginState.value = loginState
                 } else {
                     Log.e("AuthTest", "Guest login response failed: ${response.message}")
                 }

@@ -11,8 +11,10 @@ class AuthInterceptor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
+        // 1. Provider를 통해 토큰 가져오기 (여기서 잠깐 멈춤)
         val accessToken = tokenProvider.getAccessToken()
 
+        // 2. 토큰 있으면 헤더에 추가, 없으면 그냥 보냄
         val newRequest = if (!accessToken.isNullOrBlank()) {
             originalRequest.newBuilder()
                 .addHeader("Authorization", "Bearer $accessToken")
