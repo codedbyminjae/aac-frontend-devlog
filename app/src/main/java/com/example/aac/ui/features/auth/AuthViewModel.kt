@@ -21,9 +21,6 @@ class AuthViewModel(
     private val _loginState = MutableStateFlow<LoginState?>(null)
     val loginState: StateFlow<LoginState?> = _loginState
 
-    /**
-     * 로그인 없이 바로 시작 (게스트 계정 생성)
-     */
     fun startAsGuest() {
         viewModelScope.launch {
             Log.d("AuthTest", "startAsGuest() entered")
@@ -36,14 +33,18 @@ class AuthViewModel(
                     GuestLoginRequest(deviceId = deviceId)
                 )
 
-                Log.d("AuthTest", "API response received")
+                Log.d("AuthTest", "API response success: ${response.success}")
 
                 if (response.success) {
                     _loginState.value = response.toLoginState()
+
+                    Log.d("AuthTest", "LoginState updated: ${_loginState.value}")
+                } else {
+                    Log.e("AuthTest", "Guest login response failed: ${response.message}")
                 }
 
             } catch (e: Exception) {
-                Log.e("AuthTest", "Guest login failed", e)
+                Log.e("AuthTest", "Guest login exception", e)
             }
         }
     }

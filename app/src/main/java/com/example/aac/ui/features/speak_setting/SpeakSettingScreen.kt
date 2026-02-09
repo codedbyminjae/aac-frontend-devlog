@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,11 +37,20 @@ data class ContainerStyle(
 fun SpeakSettingScreen(
     viewModel: SpeakSettingViewModel = viewModel(),
     onBackClick: () -> Unit = {},
-    onSaveClick: (Int) -> Unit = {}
 ) {
     val wordList by viewModel.uiState.collectAsState()
+    val serverColumns by viewModel.serverGridColumns.collectAsState()
 
     var selectedColumnCount by remember { mutableIntStateOf(7) }
+
+    LaunchedEffect(serverColumns) {
+        if (serverColumns != 0) {
+            selectedColumnCount = serverColumns
+        }
+    }
+
+    val isChanged = selectedColumnCount != serverColumns
+
     var showSaveDialog by remember { mutableStateOf(false) }
 
     val currentStyle = when (selectedColumnCount) {
@@ -62,13 +70,19 @@ fun SpeakSettingScreen(
         if (wordList.isNotEmpty()) wordList.take(countToShow) else emptyList()
     }
 
+    fun saveAndExit() {
+        viewModel.saveGridSetting(selectedColumnCount) {
+            onBackClick()
+        }
+    }
+
     if (showSaveDialog) {
         CommonSaveDialog(
-            message = "설정을 저장하시겠습니까?",
+            message = "변경 사항을\n저장하시겠습니까?",
             onDismiss = { showSaveDialog = false },
             onSave = {
                 showSaveDialog = false
-                onSaveClick(selectedColumnCount)
+                saveAndExit()
             }
         )
     }
@@ -77,9 +91,17 @@ fun SpeakSettingScreen(
         topBar = {
             CustomTopBar(
                 title = "말하기 화면 설정",
-                onBackClick = onBackClick,
+                onBackClick = {
+                    if (isChanged) {
+                        showSaveDialog = true
+                    } else {
+                        onBackClick()
+                    }
+                },
                 actionText = "저장하기",
-                onActionClick = { showSaveDialog = true }
+                onActionClick = {
+                    saveAndExit()
+                }
             )
         },
         containerColor = Color(0xFFF4F4F4)
