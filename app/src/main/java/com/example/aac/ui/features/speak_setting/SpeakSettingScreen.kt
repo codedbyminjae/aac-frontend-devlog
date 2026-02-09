@@ -20,12 +20,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aac.R
 import com.example.aac.ui.components.CustomTopBar
 import com.example.aac.ui.components.CommonSaveDialog
 import com.example.aac.ui.features.speak_setting.components.ColumnCountButton
-import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardData
 import com.example.aac.ui.features.speak_setting.components.SpeakSettingCardItem
+import com.example.aac.data.model.SpeakSettingCardUiModel
 
 data class ContainerStyle(
     val height: Dp,
@@ -39,49 +40,31 @@ data class ContainerStyle(
 @Composable
 fun SpeakSettingScreen(
     onBackClick: () -> Unit = {},
-    onSaveClick: (Int) -> Unit = {}
+    viewModel: SpeakSettingViewModel = viewModel()
 ) {
-    val initialValue = 7
-
-    var selectedColumnCount by remember { mutableIntStateOf(initialValue) }
+    val uiState by viewModel.uiState.collectAsState()
     var showSaveDialog by remember { mutableStateOf(false) }
 
-    val hasChanges = selectedColumnCount != initialValue
+    val selectedColumnCount = uiState.selectedColumnCount
+    val hasChanges = viewModel.hasChanges()
 
-    val currentStyle = when (selectedColumnCount) {
-        7 -> ContainerStyle(323.dp, 43.dp, 23.dp, 130.dp, 20.dp, 12.dp)
-        4 -> ContainerStyle(407.dp, 192.dp, 30.dp, 160.dp, 25.dp, 15.dp)
-        3 -> ContainerStyle(370.5.dp, 40.dp, 30.dp, 310.dp, 47.dp, 29.dp)
-        else -> ContainerStyle(323.dp, 0.dp, 23.dp, 130.dp, 20.dp, 20.dp)
+    val currentStyle = remember(selectedColumnCount) {
+        when (selectedColumnCount) {
+            7 -> ContainerStyle(323.dp, 43.dp, 23.dp, 130.dp, 20.dp, 12.dp)
+            4 -> ContainerStyle(407.dp, 192.dp, 30.dp, 160.dp, 25.dp, 15.dp)
+            3 -> ContainerStyle(370.5.dp, 40.dp, 30.dp, 310.dp, 47.dp, 29.dp)
+            else -> ContainerStyle(323.dp, 0.dp, 23.dp, 130.dp, 20.dp, 20.dp)
+        }
     }
 
-    val fullDummyCards = remember {
-        listOf(
-            SpeakSettingCardData("나", R.drawable.ic_launcher_foreground, Color(0xFFFFF9C4)),
-            SpeakSettingCardData("먹다", R.drawable.ic_launcher_foreground, Color(0xFFC8E6C9)),
-            SpeakSettingCardData("가다", R.drawable.ic_launcher_foreground, Color(0xFFC8E6C9)),
-            SpeakSettingCardData("크다", R.drawable.ic_launcher_foreground, Color(0xFFBBDEFB)),
-            SpeakSettingCardData("학교", R.drawable.ic_launcher_foreground, Color(0xFFFFE0B2)),
-            SpeakSettingCardData("위", R.drawable.ic_launcher_foreground, Color(0xFFE1BEE7)),
-            SpeakSettingCardData("아래", R.drawable.ic_launcher_foreground, Color(0xFFE1BEE7)),
-            SpeakSettingCardData("나", R.drawable.ic_launcher_foreground, Color(0xFFFFF9C4)),
-            SpeakSettingCardData("먹다", R.drawable.ic_launcher_foreground, Color(0xFFC8E6C9)),
-            SpeakSettingCardData("가다", R.drawable.ic_launcher_foreground, Color(0xFFC8E6C9)),
-            SpeakSettingCardData("크다", R.drawable.ic_launcher_foreground, Color(0xFFBBDEFB)),
-            SpeakSettingCardData("학교", R.drawable.ic_launcher_foreground, Color(0xFFFFE0B2)),
-            SpeakSettingCardData("위", R.drawable.ic_launcher_foreground, Color(0xFFE1BEE7)),
-            SpeakSettingCardData("아래", R.drawable.ic_launcher_foreground, Color(0xFFE1BEE7))
-        )
-    }
-
-    val currentDisplayCards = remember(selectedColumnCount) {
+    val currentDisplayCards = remember(uiState.wordList, selectedColumnCount) {
         val countToShow = when (selectedColumnCount) {
             7 -> 14
             4 -> 8
             3 -> 3
             else -> 14
         }
-        fullDummyCards.take(countToShow)
+        uiState.wordList.take(countToShow)
     }
 
     BackHandler {
@@ -97,7 +80,7 @@ fun SpeakSettingScreen(
             message = "변경사항을\n저장하시겠어요?",
             onDismiss = { showSaveDialog = false },
             onSave = {
-                onSaveClick(selectedColumnCount)
+                viewModel.saveSettings()
                 showSaveDialog = false
                 onBackClick()
             }
@@ -114,7 +97,7 @@ fun SpeakSettingScreen(
                 },
                 actionText = "저장하기",
                 onActionClick = {
-                    onSaveClick(selectedColumnCount)
+                    viewModel.saveSettings()
                     onBackClick()
                 }
             )
@@ -149,9 +132,9 @@ fun SpeakSettingScreen(
                         .height(53.dp),
                     horizontalArrangement = Arrangement.spacedBy(50.dp)
                 ) {
-                    ColumnCountButton("7열", selectedColumnCount == 7, { selectedColumnCount = 7 }, Modifier.weight(1f))
-                    ColumnCountButton("4열", selectedColumnCount == 4, { selectedColumnCount = 4 }, Modifier.weight(1f))
-                    ColumnCountButton("3열", selectedColumnCount == 3, { selectedColumnCount = 3 }, Modifier.weight(1f))
+                    ColumnCountButton("7열", selectedColumnCount == 7, { viewModel.updateColumnCount(7) }, Modifier.weight(1f))
+                    ColumnCountButton("4열", selectedColumnCount == 4, { viewModel.updateColumnCount(4) }, Modifier.weight(1f))
+                    ColumnCountButton("3열", selectedColumnCount == 3, { viewModel.updateColumnCount(3) }, Modifier.weight(1f))
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -171,19 +154,23 @@ fun SpeakSettingScreen(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(selectedColumnCount),
-                        horizontalArrangement = Arrangement.spacedBy(currentStyle.gap),
-                        verticalArrangement = Arrangement.spacedBy(currentStyle.gap),
-                        userScrollEnabled = false,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(currentDisplayCards) { card ->
-                            SpeakSettingCardItem(
-                                card = card,
-                                cardSize = currentStyle.cardSize,
-                                cardRadius = currentStyle.radius
-                            )
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(color = Color(0xFF0088FF))
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(selectedColumnCount),
+                            horizontalArrangement = Arrangement.spacedBy(currentStyle.gap),
+                            verticalArrangement = Arrangement.spacedBy(currentStyle.gap),
+                            userScrollEnabled = false,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(currentDisplayCards) { card ->
+                                SpeakSettingCardItem(
+                                    data = card,
+                                    cardSize = currentStyle.cardSize,
+                                    cardRadius = currentStyle.radius
+                                )
+                            }
                         }
                     }
                 }

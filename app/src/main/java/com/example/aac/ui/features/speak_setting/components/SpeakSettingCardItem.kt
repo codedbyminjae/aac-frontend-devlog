@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,50 +17,68 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-data class SpeakSettingCardData(
-    val text: String,
-    val iconRes: Int,
-    val bgColor: Color
-)
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.aac.R
+import com.example.aac.data.model.SpeakSettingCardUiModel
 
 @Composable
 fun SpeakSettingCardItem(
-    card: SpeakSettingCardData,
+    data: SpeakSettingCardUiModel,
     cardSize: Dp,
-    modifier: Modifier = Modifier,
-    cardRadius: Dp
+    cardRadius: Dp,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .size(cardSize)
             .clip(RoundedCornerShape(cardRadius))
-            .background(card.bgColor)
+            .background(data.backgroundColor)
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(
-            painter = painterResource(id = card.iconRes),
-            contentDescription = card.text,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .size(cardSize * 0.4f)
-        )
+        if (data.imageUrl.isNotBlank()) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(data.imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = data.text,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .size(cardSize * 0.5f)
+                    .aspectRatio(1f)
+            )
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = data.text,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .size(cardSize * 0.5f)
+                    .aspectRatio(1f)
+            )
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Text(
-            text = card.text,
-            fontSize = if (cardSize > 200.dp) 24.sp else 16.sp,
+            text = data.text,
+            fontSize = if (cardSize > 200.dp) 24.sp else 18.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
             textAlign = TextAlign.Center,
-            maxLines = 1
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
