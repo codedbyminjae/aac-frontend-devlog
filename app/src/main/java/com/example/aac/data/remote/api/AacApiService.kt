@@ -4,6 +4,7 @@ import com.example.aac.data.remote.dto.GridSettingRequest
 import com.example.aac.data.remote.dto.GridSettingResponse
 import com.example.aac.data.remote.dto.GuestLoginRequest
 import com.example.aac.data.remote.dto.GuestLoginResponse
+import com.example.aac.data.remote.dto.MyInfoResponse
 import com.example.aac.data.remote.dto.WordResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -32,4 +33,8 @@ interface AacApiService {
     suspend fun updateGridSetting(
         @Body request: GridSettingRequest
     ): GridSettingResponse
+
+    // [Auth] 내 정보 조회 (로그인 상태 확인용)
+    @GET("api/auth/me")
+    suspend fun getMyInfo(): MyInfoResponse
 }
