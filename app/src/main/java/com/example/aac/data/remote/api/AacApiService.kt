@@ -1,11 +1,15 @@
 package com.example.aac.data.remote.api
 
+import com.example.aac.data.remote.dto.BaseResponse
 import com.example.aac.data.remote.dto.GridSettingRequest
 import com.example.aac.data.remote.dto.GridSettingResponse
 import com.example.aac.data.remote.dto.GuestLoginRequest
 import com.example.aac.data.remote.dto.GuestLoginResponse
+import com.example.aac.data.remote.dto.MyInfoResponse
 import com.example.aac.data.remote.dto.WordResponse
+import com.example.aac.data.remote.dto.LogoutResponse
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
@@ -32,4 +36,16 @@ interface AacApiService {
     suspend fun updateGridSetting(
         @Body request: GridSettingRequest
     ): GridSettingResponse
+
+    // [Auth] 내 정보 조회 (로그인 상태 확인용)
+    @GET("api/auth/me")
+    suspend fun getMyInfo(): MyInfoResponse
+
+    // [Auth] 로그아웃
+    @POST("api/auth/logout")
+    suspend fun logout(): LogoutResponse
+
+    // [Auth] 회원탈퇴
+    @DELETE("api/auth/account")
+    suspend fun withdraw(): BaseResponse<Unit>
 }

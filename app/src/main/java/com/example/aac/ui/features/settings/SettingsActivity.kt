@@ -20,7 +20,7 @@ class SettingsActivity : ComponentActivity() {
                     onVoiceSettingClick = {
                         // Activity에서는 아직 안 씀
                     },
-                    // 👇 여기를 추가해주세요!
+
                     onUsageHistoryClick = {
                         val intent = Intent(this, UsageHistoryActivity::class.java)
                         startActivity(intent)

@@ -142,6 +142,20 @@ fun AppNavGraph() {
 
                 onSpeakSettingClick = {
                     navController.navigate(Routes.SPEAK_SETTING)
+                },
+
+                // 로그아웃 성공 → 초기 화면
+                onLogoutSuccess = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+
+                // 회원탈퇴 성공 → 초기 화면
+                onWithdrawSuccess = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

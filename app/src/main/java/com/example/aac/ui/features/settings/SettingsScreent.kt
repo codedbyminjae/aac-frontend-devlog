@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import com.example.aac.R
 import com.example.aac.ui.components.CustomTopBar
 import com.example.aac.ui.features.settings.components.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.aac.ui.features.auth.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +28,8 @@ fun SettingsScreen(
     onCategoryManagementClick: () -> Unit,
     onSpeakSettingClick: () -> Unit
 ) {
+
+    val authViewModel: AuthViewModel = viewModel()
 
     var showLogoutModal by remember { mutableStateOf(false) }
     var showWithdrawModal by remember { mutableStateOf(false) }
@@ -114,7 +118,9 @@ fun SettingsScreen(
             onCancel = { showLogoutModal = false },
             onLogout = {
                 showLogoutModal = false
-                // TODO: 로그아웃 API 연결
+                // 로그아웃 실행
+                authViewModel.logout()
+                // (지금은 그냥 콜백만 호출)
                 onLogoutSuccess()
             }
         )
@@ -125,9 +131,12 @@ fun SettingsScreen(
             onCancel = { showWithdrawModal = false },
             onWithdraw = {
                 showWithdrawModal = false
-                // TODO: 회원탈퇴 API 연결
+                // 회원탈퇴 실행
+                authViewModel.withdraw()
+                // 탈퇴 후 화면 이동
                 onWithdrawSuccess()
             }
+
         )
     }
 }
