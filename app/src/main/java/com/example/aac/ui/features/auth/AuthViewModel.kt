@@ -26,6 +26,12 @@ class AuthViewModel(
     private val _loginState = MutableStateFlow<LoginState?>(null)
     val loginState: StateFlow<LoginState?> = _loginState
 
+    /* ------------------ 로그아웃 상태 ------------------ */
+
+    private val _logoutCompleted = MutableStateFlow(false)
+    val logoutCompleted: StateFlow<Boolean> = _logoutCompleted
+
+
     /* ------------------ 내 정보 (auth/me) ------------------ */
 
     private val _myInfo = MutableStateFlow<MyInfo?>(null)
@@ -77,6 +83,36 @@ class AuthViewModel(
             }
         }
     }
+
+    /* ------------------ 로그아웃 ------------------ */
+
+    fun logout() {
+        viewModelScope.launch {
+            try {
+                // 1) 서버 로그아웃 (refreshToken 쿠키 제거 목적)
+                RetrofitInstance.api.logout()
+                Log.d("AuthTest", "서버 로그아웃 호출 완료")
+
+            } catch (e: Exception) {
+                // 401 포함, 실패해도 무시
+                Log.w("AuthTest", "서버 로그아웃 실패/이미 로그아웃 상태", e)
+
+            } finally {
+                // 2) 로컬 토큰 삭제 (진짜 로그아웃)
+                RetrofitInstance.tokenDataStore.clearAccessToken()
+
+                // 3) 인증 상태 초기화
+                _loginState.value = null
+                _myInfo.value = null
+
+                // 4) UI에 로그아웃 완료 알림
+                _logoutCompleted.value = true
+
+                Log.d("AuthTest", "로컬 로그아웃 완료")
+            }
+        }
+    }
+
 
     /* ------------------ 내 정보 조회 (auth/me) ------------------ */
 
