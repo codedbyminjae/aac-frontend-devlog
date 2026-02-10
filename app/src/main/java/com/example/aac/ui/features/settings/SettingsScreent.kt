@@ -31,7 +31,6 @@ fun SettingsScreen(
 
     val authViewModel: AuthViewModel = viewModel()
 
-
     var showLogoutModal by remember { mutableStateOf(false) }
     var showWithdrawModal by remember { mutableStateOf(false) }
 
@@ -119,7 +118,7 @@ fun SettingsScreen(
             onCancel = { showLogoutModal = false },
             onLogout = {
                 showLogoutModal = false
-                // 🔥 로그아웃 실행
+                // 로그아웃 실행
                 authViewModel.logout()
                 // (지금은 그냥 콜백만 호출)
                 onLogoutSuccess()
@@ -132,9 +131,12 @@ fun SettingsScreen(
             onCancel = { showWithdrawModal = false },
             onWithdraw = {
                 showWithdrawModal = false
-                // TODO: 회원탈퇴 API 연결
+                // 회원탈퇴 실행
+                authViewModel.withdraw()
+                // 탈퇴 후 화면 이동
                 onWithdrawSuccess()
             }
+
         )
     }
 }

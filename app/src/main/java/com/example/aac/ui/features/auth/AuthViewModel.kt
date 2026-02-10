@@ -113,6 +113,28 @@ class AuthViewModel(
         }
     }
 
+    /* ------------------ 회원탈퇴 (auth/withdraw) ------------------ */
+
+    fun withdraw() {
+        viewModelScope.launch {
+            try {
+                RetrofitInstance.api.withdraw()
+
+                Log.d("AuthTest", "서버 회원탈퇴 완료")
+
+                RetrofitInstance.tokenDataStore.clearAccessToken()
+                _loginState.value = null
+                _myInfo.value = null
+
+                Log.d("AuthTest", "로컬 탈퇴 처리 완료")
+
+            } catch (e: Exception) {
+                Log.e("AuthTest", "회원탈퇴 실패", e)
+            }
+        }
+    }
+
+
 
     /* ------------------ 내 정보 조회 (auth/me) ------------------ */
 
