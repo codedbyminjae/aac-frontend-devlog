@@ -9,6 +9,8 @@ import com.example.aac.data.remote.dto.MyInfoResponse
 import com.example.aac.data.remote.dto.WordResponse
 import com.example.aac.data.remote.dto.CategoryResponse
 import com.example.aac.data.remote.dto.LogoutResponse
+import com.example.aac.data.remote.dto.AiPredictionRequest
+import com.example.aac.data.remote.dto.AiPredictionResponse
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -56,6 +58,9 @@ interface AacApiService {
         @Query("onlyFavorite") onlyFavorite: Boolean? = null
     ): WordResponse
 
-    @GET("api/categories") // 실제 서버 엔드포인트 주소 확인 필요
+    @GET("api/categories")
     suspend fun getCategories(): CategoryResponse
+
+    @POST("api/ai/predictions")
+    suspend fun getAiPredictions(@Body request: AiPredictionRequest): AiPredictionResponse
 }

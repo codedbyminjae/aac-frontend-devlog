@@ -27,6 +27,8 @@ import com.example.aac.ui.components.WordCard
 import com.example.aac.ui.features.flashcard_edit_delete.FlashcardDetailDialog
 import com.example.aac.ui.features.main.components.*
 import kotlinx.coroutines.launch
+import com.example.aac.data.repository.SentenceDataRepository
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -65,7 +67,10 @@ fun MainScreen(
                 selectedCards = selectedCards,
                 onRemoveCard = { index -> viewModel.removeCard(index) },
                 onClearAll = { viewModel.clearSelectedCards() },
-                onNavigateToAiSentence = onNavigateToAiSentence
+                onNavigateToAiSentence = {
+                    SentenceDataRepository.selectedWords = selectedCards
+                    onNavigateToAiSentence()
+                }
             )
 
             Spacer(modifier = Modifier.height(commonSpacing))
