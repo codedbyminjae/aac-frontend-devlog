@@ -1,14 +1,22 @@
 package com.example.aac.data.remote.api
 
+import com.example.aac.data.remote.dto.BaseResponse
+import com.example.aac.data.remote.dto.CategoryOrderRequest
+import com.example.aac.data.remote.dto.CategoryResponse
+import com.example.aac.data.remote.dto.CreateCategoryRequest
+import com.example.aac.data.remote.dto.DeleteCategoryResponse
 import com.example.aac.data.remote.dto.GridSettingRequest
 import com.example.aac.data.remote.dto.GridSettingResponse
 import com.example.aac.data.remote.dto.GuestLoginRequest
 import com.example.aac.data.remote.dto.GuestLoginResponse
+import com.example.aac.data.remote.dto.UpdateCategoryRequest
 import com.example.aac.data.remote.dto.WordResponse
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface AacApiService {
@@ -21,7 +29,9 @@ interface AacApiService {
 
     // [Main] 단어 목록 조회
     @GET("api/words")
-    suspend fun getWords(): WordResponse
+    suspend fun getWords(
+        @Query("categoryId") categoryId: String? = null
+    ): WordResponse
 
     // [Setting] 그리드 설정 조회
     @GET("api/settings/grid")
@@ -32,4 +42,29 @@ interface AacApiService {
     suspend fun updateGridSetting(
         @Body request: GridSettingRequest
     ): GridSettingResponse
+
+    @GET("/api/categories")
+    suspend fun getCategories(): BaseResponse<List<CategoryResponse>>
+
+    // 카테고리 생성
+    @POST("/api/categories")
+    suspend fun createCategory(
+        @Body request: CreateCategoryRequest
+    ): BaseResponse<CategoryResponse>
+
+    @PATCH("/api/categories/{id}")
+    suspend fun updateCategory(
+        @Path("id") id: String,
+        @Body request: UpdateCategoryRequest
+    ): BaseResponse<CategoryResponse>
+
+    @DELETE("/api/categories/{id}")
+    suspend fun deleteCategory(
+        @Path("id") id: String
+    ): BaseResponse<DeleteCategoryResponse>
+
+    @PATCH("/api/order/categories")
+    suspend fun updateCategoryOrders(
+        @Body request: CategoryOrderRequest
+    ): BaseResponse<CategoryResponse>
 }
