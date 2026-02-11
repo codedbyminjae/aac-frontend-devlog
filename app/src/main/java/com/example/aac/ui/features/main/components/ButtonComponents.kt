@@ -19,9 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
+import com.example.aac.ui.components.CategoryItem
 
-// --- 디자인 상수 ---
-val CustomBlue = Color(0xFF267FD6) // 배경색 (선택 시)
+val CustomBlue = Color(0xFF267FD6) // 배경색
 val TextBlack = Color.Black        // 텍스트 색상
 
 // 데이터 모델
@@ -34,10 +34,9 @@ data class CategoryItem(
 @Composable
 fun CategoryBar(
     categories: List<CategoryItem>,
-    onCategoryClick: (Int) -> Unit, // 클릭 이벤트 콜백
+    onCategoryClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // 메인 컨테이너: 가로 1137dp, 세로 68dp 고정
     Row(
         modifier = modifier
             .width(1137.dp)
@@ -45,14 +44,12 @@ fun CategoryBar(
             .clip(RoundedCornerShape(8.dp))
             .background(Color.White)
     ) {
-        // [수정됨] 이전 버튼 호출: R.drawable.ic_prev 사용
         NavigationBox(
-            iconRes = R.drawable.btn_prev, // 준비하신 이미지 리소스 ID
+            iconRes = R.drawable.btn_prev,
             description = "이전",
             onClick = { /* 이전 로직 */ }
         )
 
-        // [카테고리 탭 리스트]
         categories.forEachIndexed { index, item ->
             CategoryTabItem(
                 item = item,
@@ -60,7 +57,6 @@ fun CategoryBar(
                 modifier = Modifier.weight(1f)
             )
 
-            // 구분선 표시 로직
             val isNextSelected = (index + 1 < categories.size) && categories[index + 1].isSelected
             if (index < categories.lastIndex && !item.isSelected && !isNextSelected) {
                 VerticalDivider(
@@ -72,9 +68,8 @@ fun CategoryBar(
             }
         }
 
-        // [수정됨] 다음 버튼 호출: R.drawable.ic_next 사용 (이름 확인 필요!)
         NavigationBox(
-            iconRes = R.drawable.btn_next, // "다음" 버튼 이미지 리소스 ID
+            iconRes = R.drawable.btn_next,
             description = "다음",
             onClick = { /* 다음 로직 */ }
         )
@@ -98,7 +93,6 @@ private fun CategoryTabItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // 원본 이미지 색상 그대로 출력
         Image(
             painter = painterResource(id = item.iconRes),
             contentDescription = item.name,
@@ -116,10 +110,9 @@ private fun CategoryTabItem(
     }
 }
 
-// NavigationBox 정의 변경
 @Composable
 private fun NavigationBox(
-    iconRes: Int, // 매개변수 타입 변경: ImageVector -> Int
+    iconRes: Int,
     description: String,
     onClick: () -> Unit
 ) {
@@ -131,7 +124,6 @@ private fun NavigationBox(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        // Icon 컴포넌트 사용법 변경: imageVector -> painter
         Icon(
             painter = painterResource(id = iconRes),
             contentDescription = description,

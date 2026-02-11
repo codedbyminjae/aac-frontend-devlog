@@ -7,6 +7,7 @@ import com.example.aac.data.remote.dto.GuestLoginRequest
 import com.example.aac.data.remote.dto.GuestLoginResponse
 import com.example.aac.data.remote.dto.MyInfoResponse
 import com.example.aac.data.remote.dto.WordResponse
+import com.example.aac.data.remote.dto.CategoryResponse
 import com.example.aac.data.remote.dto.LogoutResponse
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -48,4 +49,13 @@ interface AacApiService {
     // [Auth] 회원탈퇴
     @DELETE("api/auth/account")
     suspend fun withdraw(): BaseResponse<Unit>
+
+    @GET("api/words")
+    suspend fun getWords(
+        @Query("categoryId") categoryId: String? = null,
+        @Query("onlyFavorite") onlyFavorite: Boolean? = null
+    ): WordResponse
+
+    @GET("api/categories") // 실제 서버 엔드포인트 주소 확인 필요
+    suspend fun getCategories(): CategoryResponse
 }
