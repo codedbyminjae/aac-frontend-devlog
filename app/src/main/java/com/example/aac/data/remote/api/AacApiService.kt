@@ -23,7 +23,7 @@ interface AacApiService {
     @DELETE("api/auth/account")
     suspend fun withdraw(): BaseResponse<Unit>
 
-    // [Main] 단어 목록 조회 (하나로 합침)
+    // [Main] 단어 목록 조회
     @GET("api/words")
     suspend fun getWords(
         @Query("categoryId") categoryId: String? = null,
@@ -32,7 +32,7 @@ interface AacApiService {
 
     // [Category] 카테고리 목록 조회
     @GET("api/categories")
-    suspend fun getCategories(): CategoryResponse
+    suspend fun getCategories(): BaseResponse<List<CategoryResponse>>
 
     // 카테고리 생성
     @POST("api/categories")

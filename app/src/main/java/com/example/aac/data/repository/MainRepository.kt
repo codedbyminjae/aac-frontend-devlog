@@ -1,28 +1,30 @@
 package com.example.aac.data.repository
 
 import com.example.aac.data.remote.api.RetrofitInstance
-import com.example.aac.data.remote.dto.CategoryResponseItem
-import com.example.aac.data.remote.dto.MainWordItem // ✅ 새로 만든 DTO
+import com.example.aac.data.remote.dto.CategoryResponse
+import com.example.aac.data.remote.dto.MainWordItem
 
 class MainRepository {
-    // 반환 타입이 반드시 List<CategoryResponseItem> 이어야 합니다!
-    suspend fun getCategories(): List<CategoryResponseItem> {
+    suspend fun getCategories(): List<CategoryResponse> {
         return try {
+            // response 타입: BaseResponse<List<CategoryResponse>>
             val response = RetrofitInstance.api.getCategories()
+
             if (response.success && response.data != null) {
-                response.data // ✅ 여기서 리스트(List)를 반환해야 ViewModel에서 map이 가능함
+                response.data
             } else {
                 emptyList()
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             emptyList()
         }
     }
+
     suspend fun getWords(categoryId: String? = null, onlyFavorite: Boolean = false): List<MainWordItem> {
         return try {
             val response = RetrofitInstance.api.getWords(categoryId, if(onlyFavorite) true else null)
 
-            // 서버에서 받은 List<Word>를 List<MainWordItem>으로 변환!
             response.data.words.map { oldWord ->
                 MainWordItem(
                     cardId = oldWord.cardId,
