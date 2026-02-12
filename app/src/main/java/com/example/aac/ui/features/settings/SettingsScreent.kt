@@ -8,29 +8,23 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.aac.R
 import com.example.aac.ui.components.CustomTopBar
-import com.example.aac.ui.features.settings.components.*
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aac.ui.features.auth.AuthViewModel
+import com.example.aac.ui.features.settings.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    authViewModel: AuthViewModel,
     onBackClick: () -> Unit,
     onVoiceSettingClick: () -> Unit,
     onAutoSentenceSettingClick: () -> Unit,
     onUsageHistoryClick: () -> Unit,
-    onLogoutSuccess: () -> Unit = {},
-    onWithdrawSuccess: () -> Unit = {},
     onCategoryManagementClick: () -> Unit,
-    onSpeakSettingClick: () -> Unit
+    onSpeakSettingClick: () -> Unit,
 ) {
-
-    val authViewModel: AuthViewModel = viewModel()
-
     var showLogoutModal by remember { mutableStateOf(false) }
     var showWithdrawModal by remember { mutableStateOf(false) }
 
@@ -43,6 +37,7 @@ fun SettingsScreen(
             )
         }
     ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -73,7 +68,9 @@ fun SettingsScreen(
                     rightText = "6월",
                     onClick = onSpeakSettingClick
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 SettingsListItem(
                     iconRes = R.drawable.ic_record,
                     title = "사용 기록 조회",
@@ -87,7 +84,9 @@ fun SettingsScreen(
                     title = "도움말",
                     onClick = { /* TODO */ }
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 SettingsListItem(
                     iconRes = R.drawable.ic_info,
                     title = "버전 정보",
@@ -101,7 +100,9 @@ fun SettingsScreen(
                     title = "로그아웃",
                     onClick = { showLogoutModal = true }
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 SettingsListItem(
                     iconRes = R.drawable.ic_delete_user,
                     title = "회원 탈퇴",
@@ -118,10 +119,7 @@ fun SettingsScreen(
             onCancel = { showLogoutModal = false },
             onLogout = {
                 showLogoutModal = false
-                // 로그아웃 실행
                 authViewModel.logout()
-                // (지금은 그냥 콜백만 호출)
-                onLogoutSuccess()
             }
         )
     }
@@ -131,31 +129,8 @@ fun SettingsScreen(
             onCancel = { showWithdrawModal = false },
             onWithdraw = {
                 showWithdrawModal = false
-                // 회원탈퇴 실행
                 authViewModel.withdraw()
-                // 탈퇴 후 화면 이동
-                onWithdrawSuccess()
             }
-
         )
     }
-}
-
-@Preview(
-    name = "Settings Landscape (1280x1086)",
-    showBackground = true,
-    widthDp = 1280,
-    heightDp = 1086,
-    device = "spec:width=1280dp,height=1086dp,orientation=landscape"
-)
-@Composable
-fun SettingsScreenPreview() {
-    SettingsScreen(
-        onBackClick = {},
-        onVoiceSettingClick = {},
-        onAutoSentenceSettingClick = {},
-        onUsageHistoryClick = {},
-        onCategoryManagementClick = {},
-        onSpeakSettingClick = {}
-    )
 }

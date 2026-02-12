@@ -23,6 +23,23 @@ interface AacApiService {
     @DELETE("api/auth/account")
     suspend fun withdraw(): BaseResponse<Unit>
 
+    // [Auth] 카카오 SDK 로그인
+    @POST("api/auth/kakao/sdk")
+    suspend fun kakaoLogin(
+        @Body request: KakaoLoginRequest
+    ): KakaoLoginResponse
+
+    // [Auth] 약관 동의
+    @POST("api/auth/social/complete")
+    suspend fun completeSocialSignup(
+        @Body request: SocialCompleteRequest
+    ): KakaoLoginResponse
+
+    // [Auth] 약관 목록 조회
+    @GET("api/auth/terms")
+    suspend fun getTerms(): BaseResponse<List<TermsResponse>>
+
+
     // [Main] 단어 목록 조회
     @GET("api/words")
     suspend fun getWords(
