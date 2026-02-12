@@ -6,6 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonDeleteDialog
 
 @Composable
 fun AutoSentenceSelectDeleteScreen(
@@ -16,18 +18,25 @@ fun AutoSentenceSelectDeleteScreen(
     var selectedIds by remember { mutableStateOf(setOf<Long>()) }
     var showDeleteDialog by remember { mutableStateOf(false) } // 모달 상태
 
+    // 삭제 버튼 색상 계산
+    val deleteButtonColor = if (selectedIds.isNotEmpty()) {
+        Color(0xFFE53935)
+    } else {
+        Color(0xFFB0B0B0)
+    }
+
     Scaffold(
+        containerColor = Color(0xFFF2F2F2),
         topBar = {
-            CommonTopBar(
+            CustomTopBar(
                 title = "자동 출력 문장 설정",
-                rightText = "삭제하기",
-                rightTextColor =
-                    if (selectedIds.isNotEmpty()) Color(0xFFE53935)
-                    else Color(0xFFB0B0B0),
                 onBackClick = onBack,
-                onRightClick = {
+
+                actionText = "삭제하기",
+                actionColor = deleteButtonColor,
+                onActionClick = {
                     if (selectedIds.isNotEmpty()) {
-                        showDeleteDialog = true   // 바로 삭제  → 모달 표시
+                        showDeleteDialog = true
                     }
                 }
             )
@@ -61,15 +70,15 @@ fun AutoSentenceSelectDeleteScreen(
         }
     }
 
-    /* ---------- 선택 삭제 확인 모달 ---------- */
+    /* ---------- 공통 삭제 확인 모달 적용 ---------- */
     if (showDeleteDialog) {
-        AutoSentenceDeleteConfirmDialog(
-            message = "선택한 문장을\n\n삭제 하시겠어요?",
-            onCancel = {
+        CommonDeleteDialog(
+            message = "선택한 문장을\n삭제 하시겠어요?",
+            onDismiss = {
                 showDeleteDialog = false
             },
-            onConfirm = {
-                onDeleteSelected(selectedIds) // 실제 삭제
+            onDelete = {
+                onDeleteSelected(selectedIds)
                 showDeleteDialog = false
             }
         )

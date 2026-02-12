@@ -1,37 +1,38 @@
 package com.example.aac.core.navigation
 
-import android.content.Intent // [추가] 액티비티 이동용
+import android.content.Intent
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext // [추가] 컨텍스트 획득용
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.aac.ui.features.main.MainScreen
-import com.example.aac.ui.features.ai_sentence.ui.AiSentenceScreen
 import com.example.aac.ui.features.ai_sentence.ui.AiSentenceEditScreen
-import com.example.aac.ui.features.login.LoginScreen
-import com.example.aac.ui.features.settings.SettingsScreen
+import com.example.aac.ui.features.auth.AuthViewModel
 import com.example.aac.ui.features.auto_sentence.*
-import com.example.aac.ui.features.auto_sentence.AutoSentenceSelectDeleteScreen
-import com.example.aac.ui.features.voice_setting.VoiceSettingScreen
-import com.example.aac.ui.features.usage_history.UsageHistoryActivity
 import com.example.aac.ui.features.category.CategoryManagementScreen
+import com.example.aac.ui.features.main.MainScreen
+import com.example.aac.ui.features.settings.SettingsScreen
 import com.example.aac.ui.features.speak_setting.SpeakSettingScreen
 import com.example.aac.ui.features.terms.TermsDetailScreen
 import com.example.aac.ui.features.terms.TermsScreen
+import com.example.aac.ui.features.login.LoginRoute
+import com.example.aac.ui.features.usage_history.UsageHistoryActivity
+import com.example.aac.ui.features.voice_setting.VoiceSettingScreen
 
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
 
-    /* ---------- 자동 문장 리스트 (공용 상태) ---------- */
-    var autoSentenceList by remember {
-        mutableStateOf(listOf<AutoSentenceItem>())
-    }
+    /* ---------- AuthViewModel 단일 생성 ---------- */
+    val authViewModel: AuthViewModel = viewModel()
 
-    // 목소리 설정 정보 반영 데이터
+    /* ---------- 자동 문장 리스트 (공용 상태) ---------- */
+    var autoSentenceList by remember { mutableStateOf(listOf<AutoSentenceItem>()) }
+
+    /* ---------- 목소리 설정 선택 상태 ---------- */
     var voiceSettingId by remember { mutableStateOf("default_male") }
 
     NavHost(
@@ -41,111 +42,112 @@ fun AppNavGraph() {
 
         /* ---------- LOGIN ---------- */
         composable(Routes.LOGIN) {
-            LoginScreen(
-                onSocialLoginClick = {
-                    // TODO: 나중에 로그인 성공 시 호출
-                    navController.navigate(Routes.TERMS)
+            LoginRoute(
+                viewModel = authViewModel,
+                onNavigateToTerms = {
+                    navController.navigate(Routes.TERMS) {
+                        launchSingleTop = true
+                    }
                 },
-                onGuestLoginClick = {
-                    navController.navigate(Routes.TERMS)
+                onNavigateToMain = {
+                    navController.navigate(Routes.MAIN) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
 
         /* ---------- TERMS ---------- */
         composable(Routes.TERMS) {
-            TermsScreen(
-                navController = navController,
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onStartClick = {
+            val signupCompleted by authViewModel.signupCompleted.collectAsState()
+
+            LaunchedEffect(signupCompleted) {
+                if (signupCompleted) {
                     navController.navigate(Routes.MAIN) {
                         popUpTo(Routes.TERMS) { inclusive = true }
+                        launchSingleTop = true
                     }
-                },
-                onServiceTermsClick = {
-                    navController.navigate(
-                        Routes.termsDetailRoute("service")
-                    )
-                },
-                onPrivacyTermsClick = {
-                    navController.navigate(
-                        Routes.termsDetailRoute("privacy")
-                    )
+                    authViewModel.resetSignupState() // 이벤트 소비
+                }
+            }
+
+            TermsScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                onBackClick = {
+                    // 가입 플로우 취소 (pendingToken 폐기)
+                    authViewModel.cancelSignupFlow()
+
+                    // 로그인 화면으로 이동 + Terms 스택 정리
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.TERMS) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
 
         /* ---------- TERMS DETAIL ---------- */
         composable(
-            route = Routes.TERMS_DETAIL_ROUTE,
-            arguments = listOf(navArgument("type") { type = NavType.StringType })
+            route = "terms_detail/{termId}",
+            arguments = listOf(navArgument("termId") { type = NavType.StringType })
         ) { backStackEntry ->
-
-            val type = backStackEntry.arguments?.getString("type") ?: "service"
+            val termId = backStackEntry.arguments?.getString("termId") ?: ""
 
             TermsDetailScreen(
-                type = type,
-                onBackClick = { agreed ->
-                    navController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("terms_result_$type", agreed)
-
-                    navController.popBackStack()
-                }
+                termId = termId,
+                authViewModel = authViewModel,
+                navController = navController
             )
         }
-
 
         /* ---------- MAIN ---------- */
         composable(Routes.MAIN) {
             MainScreen(
-                onNavigateToAiSentence = {
-                    navController.navigate(Routes.AI_SENTENCE)
-                },
-                onNavigateToSettings = {
-                    navController.navigate(Routes.SETTINGS)
-                }
-            )
-        }
-
-        /* ---------- AI SENTENCE ---------- */
-        composable(Routes.AI_SENTENCE) {
-            AiSentenceScreen(
-                onBack = { navController.popBackStack() },
-                onEditNavigate = { text ->
-                    navController.navigate(Routes.aiSentenceEditRoute(text))
-                }
+                onNavigateToAiSentence = { navController.navigate(Routes.AI_SENTENCE) },
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
             )
         }
 
         /* ---------- SETTINGS ---------- */
         composable(Routes.SETTINGS) {
-            // [수정됨] 액티비티 실행을 위해 Context 가져오기
             val context = LocalContext.current
 
+            val logoutCompleted by authViewModel.logoutCompleted.collectAsState()
+            val withdrawCompleted by authViewModel.withdrawCompleted.collectAsState()
+
+            LaunchedEffect(logoutCompleted) {
+                if (logoutCompleted) {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                    authViewModel.consumeLogoutCompleted()
+                }
+            }
+
+            LaunchedEffect(withdrawCompleted) {
+                if (withdrawCompleted) {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                    authViewModel.consumeWithdrawCompleted()
+                }
+            }
+
             SettingsScreen(
+                authViewModel = authViewModel,
                 onBackClick = { navController.popBackStack() },
-                onAutoSentenceSettingClick = {
-                    navController.navigate(Routes.AUTO_SENTENCE_SETTING)
-                },
-                onVoiceSettingClick = {
-                    navController.navigate(Routes.VOICE_SETTING)
-                },
-                // [추가됨] 사용 기록 조회 클릭 시 -> UsageHistoryActivity 실행
+                onAutoSentenceSettingClick = { navController.navigate(Routes.AUTO_SENTENCE_SETTING) },
+                onVoiceSettingClick = { navController.navigate(Routes.VOICE_SETTING) },
                 onUsageHistoryClick = {
                     val intent = Intent(context, UsageHistoryActivity::class.java)
                     context.startActivity(intent)
                 },
-
-                onCategoryManagementClick = {
-                    navController.navigate(Routes.CATEGORY_MANAGEMENT)
-                },
-
-                onSpeakSettingClick = {
-                    navController.navigate(Routes.SPEAK_SETTING)
-                }
+                onCategoryManagementClick = { navController.navigate(Routes.CATEGORY_MANAGEMENT) },
+                onSpeakSettingClick = { navController.navigate(Routes.SPEAK_SETTING) }
             )
         }
 
@@ -156,7 +158,6 @@ fun AppNavGraph() {
                 onBackClick = { navController.popBackStack() },
                 onSave = { selectedId ->
                     voiceSettingId = selectedId
-                    // TODO: 나중에 API 저장 연결
                 }
             )
         }
@@ -185,16 +186,10 @@ fun AppNavGraph() {
                 onBack = { navController.popBackStack() },
                 onAddClick = { navController.navigate(Routes.AUTO_SENTENCE_ADD) },
                 onEditClick = { item ->
-                    navController.navigate(
-                        Routes.autoSentenceEditRoute(item.id)
-                    )
+                    navController.navigate(Routes.autoSentenceEditRoute(item.id))
                 },
-                onSelectDeleteClick = {
-                    navController.navigate(Routes.AUTO_SENTENCE_SELECT_DELETE)
-                },
-                onDeleteAll = {
-                    autoSentenceList = emptyList()
-                },
+                onSelectDeleteClick = { navController.navigate(Routes.AUTO_SENTENCE_SELECT_DELETE) },
+                onDeleteAll = { autoSentenceList = emptyList() },
                 autoSentenceList = autoSentenceList
             )
         }
@@ -215,13 +210,8 @@ fun AppNavGraph() {
         /* ---------- AUTO SENTENCE EDIT ---------- */
         composable(
             route = Routes.AUTO_SENTENCE_EDIT,
-            arguments = listOf(
-                navArgument("itemId") {
-                    type = NavType.LongType
-                }
-            )
+            arguments = listOf(navArgument("itemId") { type = NavType.LongType })
         ) { backStackEntry ->
-
             val itemId = backStackEntry.arguments?.getLong("itemId")
             val targetItem = autoSentenceList.find { it.id == itemId }
 
@@ -230,20 +220,14 @@ fun AppNavGraph() {
                     mode = AutoSentenceMode.EDIT,
                     initialItem = targetItem,
                     onBack = { navController.popBackStack() },
-
                     onSave = { updatedItem ->
                         autoSentenceList = autoSentenceList.map {
-                            if (it.id == targetItem.id) {
-                                updatedItem.copy(id = targetItem.id)
-                            } else it
+                            if (it.id == targetItem.id) updatedItem.copy(id = targetItem.id) else it
                         }
                         navController.popBackStack()
                     },
-
                     onDelete = {
-                        autoSentenceList = autoSentenceList.filter {
-                            it.id != targetItem.id
-                        }
+                        autoSentenceList = autoSentenceList.filter { it.id != targetItem.id }
                         navController.popBackStack()
                     }
                 )
@@ -256,19 +240,20 @@ fun AppNavGraph() {
                 autoSentenceList = autoSentenceList,
                 onBack = { navController.popBackStack() },
                 onDeleteSelected = { selectedIds ->
-                    // 선택된 것만 삭제
                     autoSentenceList = autoSentenceList.filterNot { selectedIds.contains(it.id) }
-                    navController.popBackStack() // 삭제 후 설정 화면으로 복귀
+                    navController.popBackStack()
                 }
             )
         }
 
+        /* ---------- CATEGORY MANAGEMENT ---------- */
         composable(Routes.CATEGORY_MANAGEMENT) {
             CategoryManagementScreen(
-                onBackClick = { navController.popBackStack() },
+                onBackClick = { navController.popBackStack() }
             )
         }
 
+        /* ---------- SPEAK SETTING ---------- */
         composable(Routes.SPEAK_SETTING) {
             SpeakSettingScreen(
                 onBackClick = { navController.popBackStack() }

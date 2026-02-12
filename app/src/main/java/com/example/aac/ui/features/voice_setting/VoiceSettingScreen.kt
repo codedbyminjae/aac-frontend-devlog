@@ -12,12 +12,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.aac.ui.components.CustomTopBar
+import com.example.aac.ui.components.CommonSaveDialog
 
 @Composable
 fun VoiceSettingScreen(
     initialSelectedId: String,
     onBackClick: () -> Unit = {},
-    onSave: (String) -> Unit = {} // 나중에 API 연결 포인트
+    onSave: (String) -> Unit = {}
 ) {
     val options = remember {
         listOf(
@@ -30,7 +32,6 @@ fun VoiceSettingScreen(
         )
     }
 
-    // initialSelectedId가 바뀌면 selectedId도 그 값으로 다시 시작
     var selectedId by remember(initialSelectedId) { mutableStateOf(initialSelectedId) }
     val hasChanges = selectedId != initialSelectedId
 
@@ -41,33 +42,21 @@ fun VoiceSettingScreen(
         else onBackClick()
     }
 
-    if (showSaveDialog) {
-        VoiceSaveDialog(
-            onCancel = { showSaveDialog = false },
-            onSave = {
-                showSaveDialog = false
-                onSave(selectedId)
-                onBackClick()
-            }
-        )
-    }
-
     Scaffold(
         containerColor = Color(0xFFF4F4F4),
         topBar = {
-            CommonTopBar(
+            CustomTopBar(
                 title = "목소리 설정",
-                rightText = "저장하기",
                 onBackClick = {
                     if (hasChanges) showSaveDialog = true
                     else onBackClick()
                 },
-                onRightClick = {
-                    // 저장하기는 모달 없이 저장 반영 + 이동
+
+                actionText = "저장하기",
+                onActionClick = {
                     onSave(selectedId)
                     onBackClick()
-                },
-                rightTextColor = Color(0xFF2D7DFF)
+                }
             )
         }
     ) { innerPadding ->
@@ -89,5 +78,17 @@ fun VoiceSettingScreen(
                 )
             }
         }
+    }
+
+    if (showSaveDialog) {
+        CommonSaveDialog(
+            message = "변경사항을\n저장하시겠어요?",
+            onDismiss = { showSaveDialog = false },
+            onSave = {
+                showSaveDialog = false
+                onSave(selectedId)
+                onBackClick()
+            }
+        )
     }
 }

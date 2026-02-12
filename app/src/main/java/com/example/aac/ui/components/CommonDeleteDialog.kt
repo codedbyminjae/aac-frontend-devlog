@@ -1,4 +1,4 @@
-package com.example.aac.ui.features.category.components
+package com.example.aac.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -17,13 +17,14 @@ import androidx.compose.ui.window.Dialog
 import com.example.aac.R
 
 @Composable
-fun CategoryDeleteDialog(
-    onDismissRequest: () -> Unit,
-    onDeleteClick: () -> Unit
+fun CommonDeleteDialog(
+    message: String,
+    onDismiss: () -> Unit,
+    onDelete: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismissRequest) {
+    Dialog(onDismissRequest = onDismiss) {
         Card(
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(32.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFFF3F4F7)),
             modifier = Modifier
                 .width(451.dp)
@@ -39,24 +40,22 @@ fun CategoryDeleteDialog(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = "카테고리를\n삭제 하시겠어요?",
+                    text = message,
                     fontSize = 32.sp,
-                    fontWeight = FontWeight.Normal,
+                    fontWeight = FontWeight.Medium,
                     color = Color.Black,
                     textAlign = TextAlign.Center,
-                    lineHeight = 46.sp
+                    lineHeight = 32.sp * 1.3
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // 버튼 영역
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
                 ) {
-                    // 취소 버튼
                     Button(
-                        onClick = onDismissRequest,
+                        onClick = onDismiss,
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE2E5EA)),
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, Color(0xFFD9D9D9)),
@@ -68,10 +67,9 @@ fun CategoryDeleteDialog(
                         Text("취소", color = Color.Black, fontSize = 20.sp)
                     }
 
-                    // 삭제하기 버튼
                     Button(
-                        onClick = onDeleteClick,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE2E5EA)),
+                        onClick = onDelete,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCC3333)),
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, Color(0xFFD9D9D9)),
                         modifier = Modifier
@@ -80,15 +78,14 @@ fun CategoryDeleteDialog(
                         elevation = ButtonDefaults.buttonElevation(0.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_trash2),
+                            painter = painterResource(id = R.drawable.ic_trash),
                             contentDescription = null,
-                            tint = Color(0xFFCC3333),
                             modifier = Modifier.size(25.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "삭제하기",
-                            color = Color(0xFFCC3333),
+                            color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Normal
                         )
