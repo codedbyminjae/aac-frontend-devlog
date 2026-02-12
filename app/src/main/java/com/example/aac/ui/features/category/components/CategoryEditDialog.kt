@@ -3,6 +3,7 @@ package com.example.aac.ui.features.category.components
 import android.content.Context
 import android.graphics.Color as AndroidColor
 import android.graphics.drawable.GradientDrawable
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.widget.TextView
@@ -42,8 +43,21 @@ fun CategoryEditDialog(
     onDismissRequest: () -> Unit,
     onSaveClick: (String, Int) -> Unit
 ) {
-    var name by remember { mutableStateOf(category.title) }
-    var selectedIcon by remember { mutableIntStateOf(category.iconRes) }
+    // 🔍 [로그] 다이얼로그가 뜰 때 넘겨받은 데이터 확인
+    LaunchedEffect(category.id) {
+        Log.d("DIALOG_CHECK", "====================================")
+        Log.d("DIALOG_CHECK", "🆔 ID: ${category.id}")
+        Log.d("DIALOG_CHECK", "🏷️ 이름: ${category.title}")
+        Log.d("DIALOG_CHECK", "🖼️ 아이콘: ${category.iconRes}")
+        Log.d("DIALOG_CHECK", "🛠️ 모드: ${if (category.id != null) "편집" else "추가"}")
+        Log.d("DIALOG_CHECK", "====================================")
+    }
+
+    // 🔥 [핵심 수정] remember에 category.id를 key로 설정
+    // 이렇게 해야 '추가' 누르다 '편집' 눌렀을 때 텍스트와 타이틀이 새 데이터로 바뀝니다.
+    val isEditMode = remember(category.id) { category.id != null }
+    var name by remember(category.id) { mutableStateOf(category.title) }
+    var selectedIcon by remember(category.id) { mutableIntStateOf(category.iconRes) }
 
     val context = LocalContext.current
 
@@ -71,8 +85,9 @@ fun CategoryEditDialog(
                     .padding(horizontal = 51.dp, vertical = 48.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // 🏷️ 타이틀 영역
                 Text(
-                    text = "카테고리 추가",
+                    text = if (isEditMode) "카테고리 편집" else "카테고리 추가",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
@@ -81,6 +96,7 @@ fun CategoryEditDialog(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
+                // 📝 이름 입력 영역
                 Column(
                     modifier = Modifier.width(426.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -113,6 +129,7 @@ fun CategoryEditDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // ✨ 아이콘 선택 영역
                 Column(
                     modifier = Modifier
                         .width(426.dp)
@@ -148,6 +165,7 @@ fun CategoryEditDialog(
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                // 🔘 버튼 영역
                 Row(
                     modifier = Modifier.width(426.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -166,8 +184,8 @@ fun CategoryEditDialog(
 
                     Button(
                         onClick = {
+                            Log.d("DIALOG_CHECK", "💾 [저장 클릭] 현재 모드: ${if(isEditMode) "편집" else "추가"}, 이름: $name")
                             if (name.isBlank()) {
-                                // ✅ 요청하신 디자인 규격이 반영된 토스트 호출
                                 showCleanToast(context, "카테고리 이름을 입력해주세요.")
                             } else {
                                 onSaveClick(name, selectedIcon)
@@ -188,42 +206,29 @@ fun CategoryEditDialog(
     }
 }
 
-// ==========================================
-// 👇 요청하신 수치(197x42, Radius 10, Padding 반영) 깔끔한 토스트
-// ==========================================
+// ----------------------------------------------------------------------------
+// 하단 Toast 및 Item 컴포넌트 (동일)
+// ----------------------------------------------------------------------------
+
 fun showCleanToast(context: Context, message: String) {
     val density = context.resources.displayMetrics.density
     val toast = Toast(context)
 
     val textView = TextView(context).apply {
         text = message
-        // 텍스트 크기도 높이(42dp)에 맞춰 적절히 조정
         setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f)
         setTextColor(AndroidColor.BLACK)
         gravity = Gravity.CENTER
-
-        // 1. Width: 197dp, Height: 42dp 반영
         width = (230 * density).toInt()
         height = (42 * density).toInt()
-
-        // 2. Padding: Top 9, Bottom 9, Left 24, Right 24 반영
-        setPadding(
-            (24 * density).toInt(),
-            (9 * density).toInt(),
-            (24 * density).toInt(),
-            (9 * density).toInt()
-        )
-
-        // 3. 배경 설정 (흰색 + Border Radius 10px + 회색 테두리)
+        setPadding((24 * density).toInt(), (9 * density).toInt(), (24 * density).toInt(), (9 * density).toInt())
         background = GradientDrawable().apply {
             setColor(AndroidColor.WHITE)
-            cornerRadius = 10 * density // radius: 10px
-            setStroke(1, AndroidColor.parseColor("#D9D9D9")) // 경계를 위한 연한 테두리
+            cornerRadius = 10 * density
+            setStroke(1, AndroidColor.parseColor("#D9D9D9"))
         }
     }
-
     toast.view = textView
-    // 4. 위치: 하단에서 약간 위쪽 (924px 위치와 유사하게 조정 가능하나 기본 Bottom 추천)
     toast.setGravity(Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL, 0, 150)
     toast.duration = Toast.LENGTH_SHORT
     toast.show()
