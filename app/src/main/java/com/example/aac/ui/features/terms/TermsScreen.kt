@@ -1,12 +1,16 @@
 package com.example.aac.ui.features.terms
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,42 +24,56 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.aac.R
+import com.example.aac.ui.features.auth.AuthViewModel
 
 @Composable
 fun TermsScreen(
     navController: NavController,
-    onBackClick: () -> Unit,
-    onStartClick: () -> Unit = {},
-    onServiceTermsClick: () -> Unit,
-    onPrivacyTermsClick: () -> Unit
+    authViewModel: AuthViewModel,
+    onBackClick: () -> Unit
 ) {
-    /* ---------- 체크 상태 ---------- */
-    var serviceChecked by remember { mutableStateOf(false) }
-    var privacyChecked by remember { mutableStateOf(false) }
 
-    /* ---------- TermsDetail 결과 수신 ---------- */
-    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
-
-    val serviceResult by savedStateHandle
-        ?.getStateFlow("terms_result_service", false)
-        ?.collectAsState() ?: remember { mutableStateOf(false) }
-
-    val privacyResult by savedStateHandle
-        ?.getStateFlow("terms_result_privacy", false)
-        ?.collectAsState() ?: remember { mutableStateOf(false) }
-
-    /* ---------- 결과 반영 ---------- */
-    LaunchedEffect(serviceResult) {
-        if (serviceResult) serviceChecked = true
+    // ✅ 시스템(폰) 뒤로가기까지 동일 동작
+    BackHandler(enabled = true) {
+        onBackClick()
     }
 
-    LaunchedEffect(privacyResult) {
-        if (privacyResult) privacyChecked = true
+    /* ---------------- 서버 약관 목록 ---------------- */
+    val termsList by authViewModel.termsList.collectAsState()
+
+    /* ---------------- 화면 진입 시 약관 조회 ---------------- */
+    LaunchedEffect(Unit) {
+        authViewModel.fetchTerms()
     }
 
-    val allAgreeChecked = serviceChecked && privacyChecked
+    /* ---------------- 체크 상태 ---------------- */
+    var checkedIds by rememberSaveable { mutableStateOf(setOf<String>()) }
 
-    /* ---------- UI ---------- */
+    /* ---------------- 상세 화면 결과 반영 ---------------- */
+    val currentBackStackEntry = navController.currentBackStackEntry
+    val savedStateHandle = currentBackStackEntry?.savedStateHandle
+
+    LaunchedEffect(savedStateHandle, termsList) {
+        termsList.forEach { term ->
+            val key = "terms_result_${term.id}"
+            val result = savedStateHandle?.get<Boolean>(key)
+
+            if (result == true) {
+                checkedIds = checkedIds + term.id
+                savedStateHandle.remove<Boolean>(key)
+            }
+        }
+    }
+
+    /* ---------------- 필수 약관 모두 체크 여부 ---------------- */
+    val allRequiredChecked = termsList.all { term ->
+        !term.isRequired || checkedIds.contains(term.id)
+    }
+
+    /* ---------------- 전체 동의 체크 여부 ---------------- */
+    val allAgreeChecked = termsList.isNotEmpty() && checkedIds.size == termsList.size
+
+    /* ---------------- UI ---------------- */
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -89,11 +107,11 @@ fun TermsScreen(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 112.dp)
-                .width(636.dp),
+                .width(636.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            /* ---------- 안내 문구 ---------- */
             Text(
                 text = buildAnnotatedString {
                     append("약관에 동의하시면\n")
@@ -138,8 +156,11 @@ fun TermsScreen(
                     AgreeCheckBox(
                         checked = allAgreeChecked,
                         onCheckedChange = { checked ->
-                            serviceChecked = checked
-                            privacyChecked = checked
+                            checkedIds = if (checked) {
+                                termsList.map { it.id }.toSet()
+                            } else {
+                                emptySet()
+                            }
                         }
                     )
                 }
@@ -147,30 +168,33 @@ fun TermsScreen(
 
             Spacer(modifier = Modifier.height(50.dp))
 
-            /* ---------- 개별 약관 ---------- */
+            /* ---------- 개별 약관 목록 ---------- */
             Box(
                 modifier = Modifier
                     .width(535.dp)
-                    .height(96.dp)
                     .background(Color.White, RoundedCornerShape(15.dp))
+                    .padding(vertical = 24.dp)
             ) {
-                Column(modifier = Modifier.fillMaxSize()) {
+                Column {
+                    termsList.forEach { term ->
 
-                    TermsAgreeRow(
-                        text = TermsText.SERVICE_TITLE,
-                        checked = serviceChecked,
-                        onCheckedChange = { serviceChecked = it },
-                        onTextClick = onServiceTermsClick
-                    )
+                        TermsAgreeRow(
+                            text = term.title,
+                            checked = checkedIds.contains(term.id),
+                            onCheckedChange = { checked ->
+                                checkedIds = if (checked) {
+                                    checkedIds + term.id
+                                } else {
+                                    checkedIds - term.id
+                                }
+                            },
+                            onTextClick = {
+                                navController.navigate("terms_detail/${term.id}")
+                            }
+                        )
 
-                    Spacer(modifier = Modifier.height(30.dp))
-
-                    TermsAgreeRow(
-                        text = TermsText.PRIVACY_TITLE,
-                        checked = privacyChecked,
-                        onCheckedChange = { privacyChecked = it },
-                        onTextClick = onPrivacyTermsClick
-                    )
+                        Spacer(modifier = Modifier.height(30.dp))
+                    }
                 }
             }
 
@@ -179,9 +203,13 @@ fun TermsScreen(
             /* ---------- 시작하기 ---------- */
             ActionButton(
                 text = "시작하기",
-                enabled = allAgreeChecked,
-                onClick = { onStartClick() }
+                enabled = allRequiredChecked, // 필수만 체크해도 가능
+                onClick = {
+                    authViewModel.completeSocialSignup()
+                }
             )
+
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

@@ -52,6 +52,7 @@ android {
 }
 
 dependencies {
+    implementation("com.kakao.sdk:v2-user:2.20.0") // 카카오 SDK 추가
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
