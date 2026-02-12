@@ -7,7 +7,10 @@ import com.example.aac.data.remote.dto.GuestLoginRequest
 import com.example.aac.data.remote.dto.GuestLoginResponse
 import com.example.aac.data.remote.dto.MyInfoResponse
 import com.example.aac.data.remote.dto.WordResponse
+import com.example.aac.data.remote.dto.CategoryResponse
 import com.example.aac.data.remote.dto.LogoutResponse
+import com.example.aac.data.remote.dto.AiPredictionRequest
+import com.example.aac.data.remote.dto.AiPredictionResponse
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -48,4 +51,16 @@ interface AacApiService {
     // [Auth] 회원탈퇴
     @DELETE("api/auth/account")
     suspend fun withdraw(): BaseResponse<Unit>
+
+    @GET("api/words")
+    suspend fun getWords(
+        @Query("categoryId") categoryId: String? = null,
+        @Query("onlyFavorite") onlyFavorite: Boolean? = null
+    ): WordResponse
+
+    @GET("api/categories")
+    suspend fun getCategories(): CategoryResponse
+
+    @POST("api/ai/predictions")
+    suspend fun getAiPredictions(@Body request: AiPredictionRequest): AiPredictionResponse
 }

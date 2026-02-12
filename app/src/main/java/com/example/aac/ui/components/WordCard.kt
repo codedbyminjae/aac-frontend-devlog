@@ -1,16 +1,13 @@
 package com.example.aac.ui.components
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -25,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -45,12 +43,9 @@ fun getBackgroundColorByPartOfSpeech(partOfSpeech: String): Color {
 fun getSafeUrl(url: String): String {
     return try {
         if (url.isBlank()) return url
-
         val fileName = url.substringAfterLast("/")
         val baseUrl = url.substringBeforeLast("/")
-
         val encodedName = URLEncoder.encode(fileName, "UTF-8").replace("+", "%20")
-
         "$baseUrl/$encodedName"
     } catch (e: Exception) {
         url
@@ -64,48 +59,64 @@ fun WordCard(
     partOfSpeech: String,
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 12.dp,
-    onClick: () -> Unit = {}
+    fontSize: TextUnit = 20.sp,
+    iconSize: Dp = 65.dp,
+    borderColor: Color? = null,
+    onClick: (() -> Unit)? = null
 ) {
     val backgroundColor = getBackgroundColorByPartOfSpeech(partOfSpeech)
-
     val safeImageUrl = remember(imageUrl) { getSafeUrl(imageUrl) }
 
-    Log.e("IMAGE_TEST", "변환된 URL: $safeImageUrl")
+    val finalModifier = if (onClick != null) {
+        modifier.clickable { onClick() }
+    } else {
+        modifier
+    }
 
-    Column(
-        modifier = modifier
+    val finalColor = if (borderColor != null) {
+        BorderStroke(1.dp, borderColor)
+    } else {
+        null
+    }
+
+    Card(
+        modifier = finalModifier
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(cornerRadius))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .clip(RoundedCornerShape(cornerRadius)),
+        shape = RoundedCornerShape(cornerRadius),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        border = finalColor
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(safeImageUrl)
-                .crossfade(true)
-                .build(),
-            contentDescription = text,
-            placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
-            error = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentScale = ContentScale.Fit,
+        Column(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(0.7f)
-        )
+                .fillMaxSize()
+                .padding(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(safeImageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = text,
+                placeholder = painterResource(id = R.drawable.ic_launcher_foreground),
+                error = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(iconSize)
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = text,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+            Text(
+                text = text,
+                fontSize = fontSize,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
