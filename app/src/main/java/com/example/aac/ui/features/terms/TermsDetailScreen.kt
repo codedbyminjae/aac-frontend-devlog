@@ -18,25 +18,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
+import com.example.aac.ui.features.auth.AuthViewModel
+import androidx.navigation.NavController
 
 @Composable
 fun TermsDetailScreen(
-    type: String,
-    onBackClick: (Boolean) -> Unit
+    termId: String,
+    authViewModel: AuthViewModel,
+    navController: NavController
 ) {
+
+    val termsList by authViewModel.termsList.collectAsState()
+    val term = termsList.firstOrNull { it.id == termId }
     var agreed by remember { mutableStateOf(false) }
-
-    val title = if (type == "privacy") {
-        "개인정보 처리방침"
-    } else {
-        "서비스 이용약관"
-    }
-
-    val agreeText = if (type == "privacy") {
-        "개인정보 처리방침 동의하기"
-    } else {
-        "서비스 이용약관 동의하기"
-    }
 
     Box(
         modifier = Modifier
@@ -48,7 +42,9 @@ fun TermsDetailScreen(
         Row(
             modifier = Modifier
                 .padding(start = 24.dp, top = 38.dp)
-                .clickable { onBackClick(agreed) },
+                .clickable {
+                    navController.popBackStack()
+                },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
@@ -62,7 +58,7 @@ fun TermsDetailScreen(
             Text(text = "뒤로가기", fontSize = 18.sp)
         }
 
-        /* ---------- 스크롤 영역 ---------- */
+        /* ---------- 본문 ---------- */
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -72,14 +68,13 @@ fun TermsDetailScreen(
         ) {
 
             Text(
-                text = title,
+                text = term?.title ?: "",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Medium
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            /* ---------- 약관 본문 ---------- */
             Box(
                 modifier = Modifier
                     .width(636.dp)
@@ -87,11 +82,10 @@ fun TermsDetailScreen(
                     .border(1.dp, Color(0xFFB2B2B2), RoundedCornerShape(20.dp))
                     .padding(20.dp)
             ) {
-                if (type == "privacy") {
-                    PrivacyTermsContent()
-                } else {
-                    ServiceTermsContent()
-                }
+                Text(
+                    text = term?.content ?: "약관을 불러오는 중...",
+                    fontSize = 16.sp
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -102,12 +96,14 @@ fun TermsDetailScreen(
                     .width(636.dp)
                     .height(84.dp)
                     .background(Color(0xFFD7E6F9), RoundedCornerShape(15.dp))
-                    .padding(start = 52.dp, end = 50.dp, top = 23.dp, bottom = 23.dp)
+                    .padding(horizontal = 52.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+
                     Text(
-                        text = agreeText,
-                        fontSize = 32.sp,
+                        text = "${term?.title} 동의하기",
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF1C63A8)
                     )
@@ -119,7 +115,11 @@ fun TermsDetailScreen(
                         onCheckedChange = {
                             agreed = it
                             if (it) {
-                                onBackClick(true)
+                                navController.previousBackStackEntry
+                                    ?.savedStateHandle
+                                    ?.set("terms_result_$termId", true)
+
+                                navController.popBackStack()
                             }
                         }
                     )
