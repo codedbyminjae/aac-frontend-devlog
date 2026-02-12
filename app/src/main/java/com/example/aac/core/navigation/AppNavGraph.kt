@@ -21,6 +21,9 @@ import com.example.aac.ui.features.terms.TermsScreen
 import com.example.aac.ui.features.login.LoginRoute
 import com.example.aac.ui.features.usage_history.UsageHistoryActivity
 import com.example.aac.ui.features.voice_setting.VoiceSettingScreen
+import com.example.aac.ui.features.ai_sentence.ui.AiSentenceScreen
+import com.example.aac.data.repository.SentenceDataRepository
+
 
 @Composable
 fun AppNavGraph() {
@@ -158,6 +161,17 @@ fun AppNavGraph() {
                 onBackClick = { navController.popBackStack() },
                 onSave = { selectedId ->
                     voiceSettingId = selectedId
+                }
+            )
+        }
+
+        composable(Routes.AI_SENTENCE) {
+            AiSentenceScreen(
+                initialWords = SentenceDataRepository.selectedWords,
+
+                onBack = { navController.popBackStack() },
+                onEditNavigate = { text ->
+                    navController.navigate(Routes.aiSentenceEditRoute(text))
                 }
             )
         }
