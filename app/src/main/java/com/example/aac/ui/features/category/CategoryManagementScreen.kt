@@ -15,7 +15,6 @@ import com.example.aac.ui.components.CustomTopBar
 import com.example.aac.ui.features.category.components.ManagementTabRow
 import com.example.aac.ui.features.category.components.WordCardManagementContent
 import com.example.aac.ui.features.category.CategoryManagementContent
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun CategoryManagementScreen(
@@ -30,11 +29,18 @@ fun CategoryManagementScreen(
     val serverWords by viewModel.wordCards.collectAsState()
     val selectedWordCategoryId by viewModel.selectedWordCategoryId.collectAsState()
 
-    // 2. 로컬 상태
+    // 2. 로컬 상태 (UI에서 편집 중인 리스트)
     val categoryList = remember { mutableStateListOf<CategoryEditData>() }
 
-    // 서버 데이터 동기화
+    // 🔥 서버 데이터 동기화 및 iconKey 로그 확인
     LaunchedEffect(serverCategories) {
+        Log.d("ICON_KEY_CHECK", "====================================")
+        Log.d("ICON_KEY_CHECK", "📡 서버 응답 카테고리 수: ${serverCategories.size}개")
+        serverCategories.forEach { category ->
+            Log.d("ICON_KEY_CHECK", "이름: ${category.name} | ID: ${category.id} | 🔑 iconKey(String): ${category.iconKey}")
+        }
+        Log.d("ICON_KEY_CHECK", "====================================")
+
         if (categoryList.isEmpty() || categoryList.size != serverCategories.size) {
             categoryList.clear()
             categoryList.addAll(
@@ -50,7 +56,7 @@ fun CategoryManagementScreen(
         }
     }
 
-    // 3. 변경 감지
+    // 3. 변경 감지 (서버 데이터와 로컬 리스트 비교)
     val hasCategoryChanges by remember {
         derivedStateOf {
             if (categoryList.size != serverCategories.size) return@derivedStateOf true
@@ -67,11 +73,17 @@ fun CategoryManagementScreen(
     val hasWordChanges = false
     val hasChanges = hasCategoryChanges || hasWordChanges
 
-    // 4. 이벤트 처리 (저장 완료 시 탈출)
-    LaunchedEffect(true) {
-        viewModel.eventFlow.collectLatest { event ->
+    // 4. 이벤트 처리 (저장 완료 시 화면 종료)
+    LaunchedEffect(Unit) {
+        viewModel.eventFlow.collect { event ->
             when (event) {
-                is CategoryViewModel.UiEvent.SaveCompleted -> onBackClick()
+                is CategoryViewModel.UiEvent.SaveCompleted -> {
+                    Log.d("TAG_CHECK", "🚀 저장 완료! 설정 화면으로 이동합니다.")
+                    onBackClick()
+                }
+                is CategoryViewModel.UiEvent.Error -> {
+                    Log.e("TAG_CHECK", "❌ 저장 실패: ${event.message}")
+                }
             }
         }
     }
@@ -87,7 +99,6 @@ fun CategoryManagementScreen(
             actionText = "저장하기",
             onActionClick = {
                 if (selectedTabIndex == 0) {
-                    // ✅ [수정] 변경 사항이 있으면 저장 로직 수행, 없으면 즉시 뒤로가기
                     if (hasCategoryChanges) {
                         viewModel.saveCategoryList(categoryList)
                     } else {
@@ -112,7 +123,14 @@ fun CategoryManagementScreen(
                         )
                     )
                 },
+
+                // 🔥 [수정 완료] 이제 뷰모델을 호출해서 서버에 저장 요청을 보냅니다!
                 onEditCategory = { targetId, newName, newIcon ->
+                    // 1. 서버 API 호출 (즉시 저장)
+                    Log.d("TAG_CHECK", "✏️ UI에서 편집 요청: $newName")
+                    viewModel.updateCategory(targetId, newName, newIcon)
+
+                    // 2. 로컬 리스트 업데이트 (UI 즉시 반영)
                     val index = categoryList.indexOfFirst { it.id == targetId }
                     if (index != -1) {
                         categoryList[index] = categoryList[index].copy(
@@ -121,6 +139,7 @@ fun CategoryManagementScreen(
                         )
                     }
                 },
+
                 onDeleteCategory = { targetId ->
                     val item = categoryList.find { it.id == targetId }
                     if (item != null) {
@@ -148,7 +167,6 @@ fun CategoryManagementScreen(
             message = "변경사항을\n저장하시겠어요?",
             onDismiss = { showSaveDialog = false },
             onSave = {
-                // ✅ [수정] 다이얼로그에서도 변경 사항 여부에 따라 분기 처리
                 if (selectedTabIndex == 0 && hasCategoryChanges) {
                     viewModel.saveCategoryList(categoryList)
                 } else {
