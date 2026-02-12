@@ -1,23 +1,7 @@
 package com.example.aac.data.remote.api
 
-import com.example.aac.data.remote.dto.BaseResponse
-import com.example.aac.data.remote.dto.CategoryOrderRequest
-import com.example.aac.data.remote.dto.CategoryResponse
-import com.example.aac.data.remote.dto.CreateCategoryRequest
-import com.example.aac.data.remote.dto.DeleteCategoryResponse
-import com.example.aac.data.remote.dto.GridSettingRequest
-import com.example.aac.data.remote.dto.GridSettingResponse
-import com.example.aac.data.remote.dto.GuestLoginRequest
-import com.example.aac.data.remote.dto.GuestLoginResponse
-import com.example.aac.data.remote.dto.UpdateCategoryRequest
-import com.example.aac.data.remote.dto.WordResponse
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.PATCH
-import retrofit2.http.POST
-import retrofit2.http.Path
-import retrofit2.http.Query
+import com.example.aac.data.remote.dto.*
+import retrofit2.http.*
 
 interface AacApiService {
 
@@ -27,11 +11,53 @@ interface AacApiService {
         @Body request: GuestLoginRequest
     ): GuestLoginResponse
 
-    // [Main] 단어 목록 조회
+    // [Auth] 내 정보 조회
+    @GET("api/auth/me")
+    suspend fun getMyInfo(): MyInfoResponse
+
+    // [Auth] 로그아웃
+    @POST("api/auth/logout")
+    suspend fun logout(): LogoutResponse
+
+    // [Auth] 회원탈퇴
+    @DELETE("api/auth/account")
+    suspend fun withdraw(): BaseResponse<Unit>
+
+    // [Main] 단어 목록 조회 (하나로 합침)
     @GET("api/words")
     suspend fun getWords(
-        @Query("categoryId") categoryId: String? = null
+        @Query("categoryId") categoryId: String? = null,
+        @Query("onlyFavorite") onlyFavorite: Boolean? = null
     ): WordResponse
+
+    // [Category] 카테고리 목록 조회
+    @GET("api/categories")
+    suspend fun getCategories(): CategoryResponse
+
+    // 카테고리 생성
+    @POST("api/categories")
+    suspend fun createCategory(
+        @Body request: CreateCategoryRequest
+    ): BaseResponse<CategoryResponse>
+
+    // 카테고리 수정
+    @PATCH("api/categories/{id}")
+    suspend fun updateCategory(
+        @Path("id") id: String,
+        @Body request: UpdateCategoryRequest
+    ): BaseResponse<CategoryResponse>
+
+    // 카테고리 삭제
+    @DELETE("api/categories/{id}")
+    suspend fun deleteCategory(
+        @Path("id") id: String
+    ): BaseResponse<DeleteCategoryResponse>
+
+    // 카테고리 순서 변경
+    @PATCH("api/order/categories")
+    suspend fun updateCategoryOrders(
+        @Body request: CategoryOrderRequest
+    ): BaseResponse<CategoryResponse>
 
     // [Setting] 그리드 설정 조회
     @GET("api/settings/grid")
@@ -43,28 +69,9 @@ interface AacApiService {
         @Body request: GridSettingRequest
     ): GridSettingResponse
 
-    @GET("/api/categories")
-    suspend fun getCategories(): BaseResponse<List<CategoryResponse>>
-
-    // 카테고리 생성
-    @POST("/api/categories")
-    suspend fun createCategory(
-        @Body request: CreateCategoryRequest
-    ): BaseResponse<CategoryResponse>
-
-    @PATCH("/api/categories/{id}")
-    suspend fun updateCategory(
-        @Path("id") id: String,
-        @Body request: UpdateCategoryRequest
-    ): BaseResponse<CategoryResponse>
-
-    @DELETE("/api/categories/{id}")
-    suspend fun deleteCategory(
-        @Path("id") id: String
-    ): BaseResponse<DeleteCategoryResponse>
-
-    @PATCH("/api/order/categories")
-    suspend fun updateCategoryOrders(
-        @Body request: CategoryOrderRequest
-    ): BaseResponse<CategoryResponse>
+    // [AI] 문장 추천
+    @POST("api/ai/predictions")
+    suspend fun getAiPredictions(
+        @Body request: AiPredictionRequest
+    ): AiPredictionResponse
 }

@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -34,21 +36,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.aac.R
-import com.example.aac.ui.features.main.components.CardData
+import com.example.aac.data.remote.dto.MainWordItem
+import com.example.aac.ui.components.getBackgroundColorByPartOfSpeech
+import com.example.aac.ui.components.getSafeUrl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashcardEditDialog(
-    card: CardData?,
+    card: MainWordItem?,
     onDismiss: () -> Unit,
     onSave: (String) -> Unit
 ) {
     if (card == null) return
 
-    var wordText by remember { mutableStateOf(card.text) }
+    var wordText by remember { mutableStateOf(card.word) }
     var selectedCategory by remember { mutableStateOf("감정") }
     var isEditingWord by remember { mutableStateOf(false) }
 
@@ -66,6 +72,8 @@ fun FlashcardEditDialog(
     val pointBlue = Color(0xFF0088FF)
     val lightGrayBorder = Color(0xFFDDDDDD)
     val buttonBorderColor = Color(0xFFD9D9D9)
+
+    val cardBackgroundColor = getBackgroundColorByPartOfSpeech(card.partOfSpeech)
 
     LaunchedEffect(isEditingWord) {
         if (isEditingWord) {
@@ -100,6 +108,7 @@ fun FlashcardEditDialog(
                         modifier = Modifier.align(Alignment.Start).padding(bottom = 24.dp)
                     )
 
+                    // 카테고리 선택 영역
                     Column(modifier = Modifier.width(426.dp)) {
                         Text(text = "카테고리", fontSize = 14.sp, color = Color.Gray)
                         Spacer(modifier = Modifier.height(4.dp))
@@ -122,6 +131,7 @@ fun FlashcardEditDialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // 낱말 이름 수정 영역
                     Column(modifier = Modifier.width(426.dp)) {
                         Text(text = "낱말", fontSize = 14.sp, color = Color.Gray)
                         Spacer(modifier = Modifier.height(4.dp))
@@ -158,6 +168,7 @@ fun FlashcardEditDialog(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // 낱말 사진 수정 영역
                     Column(
                         modifier = Modifier.width(426.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -174,7 +185,7 @@ fun FlashcardEditDialog(
                             modifier = Modifier
                                 .size(160.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(Color(0xFFFFFDE7))
+                                .background(cardBackgroundColor) // 품사별 배경색 적용
                                 .drawBehind {
                                     drawRoundRect(
                                         color = pointBlue,
@@ -188,8 +199,28 @@ fun FlashcardEditDialog(
                                 .clickable { showPhotoSheet = true },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(painterResource(id = R.drawable.ic_emotion), null, Modifier.size(80.dp), Color.Unspecified)
-                            Icon(Icons.Default.FileUpload, null, Modifier.size(48.dp), Color(0xFF333333))
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(getSafeUrl(card.imageUrl))
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.7f)
+                                    .aspectRatio(1f),
+                                contentScale = ContentScale.Fit,
+                                placeholder = painterResource(R.drawable.ic_launcher_foreground),
+                                error = painterResource(R.drawable.ic_launcher_foreground)
+                            )
+
+                            Icon(
+                                imageVector = Icons.Default.FileUpload,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .align(Alignment.Center), // 중앙에 배치하거나 위치 조정 필요
+                                tint = Color(0xFF333333)
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -270,7 +301,6 @@ fun FlashcardEditDialog(
             sheetState = categorySheetState,
             containerColor = Color.White,
             dragHandle = { BottomSheetDefaults.DragHandle() },
-            // [수정 포인트] 시트 자체의 최대 너비를 제한하지 않도록 설정하거나 content에서 조절
             modifier = Modifier.fillMaxWidth()
         ) {
             CategorySelectionContent(
@@ -302,7 +332,6 @@ fun CategorySelectionContent(
 
     Column(
         modifier = Modifier
-            // [수정 포인트] 모달 전체 크기를 1280x380으로 고정
             .width(1280.dp)
             .height(380.dp)
             .background(Color.White),
@@ -310,14 +339,13 @@ fun CategorySelectionContent(
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        // [수정 포인트] 텍스트 중앙 정렬
         Text(
             text = "낱말 카드를 추가할 카테고리를 선택하세요",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier
-                .fillMaxWidth() // 가로 전체를 채워야 중앙 정렬이 보입니다
+                .fillMaxWidth()
                 .padding(bottom = 64.dp)
         )
 

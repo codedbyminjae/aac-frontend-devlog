@@ -22,6 +22,7 @@ import com.example.aac.ui.features.speak_setting.SpeakSettingScreen
 import com.example.aac.ui.features.terms.TermsDetailScreen
 import com.example.aac.ui.features.terms.TermsScreen
 import com.example.aac.ui.features.login.LoginRoute
+import com.example.aac.data.repository.SentenceDataRepository
 
 @Composable
 fun AppNavGraph() {
@@ -110,6 +111,8 @@ fun AppNavGraph() {
         /* ---------- AI SENTENCE ---------- */
         composable(Routes.AI_SENTENCE) {
             AiSentenceScreen(
+                initialWords = SentenceDataRepository.selectedWords,
+
                 onBack = { navController.popBackStack() },
                 onEditNavigate = { text ->
                     navController.navigate(Routes.aiSentenceEditRoute(text))
@@ -119,7 +122,6 @@ fun AppNavGraph() {
 
         /* ---------- SETTINGS ---------- */
         composable(Routes.SETTINGS) {
-            // [수정됨] 액티비티 실행을 위해 Context 가져오기
             val context = LocalContext.current
 
             SettingsScreen(
@@ -142,6 +144,20 @@ fun AppNavGraph() {
 
                 onSpeakSettingClick = {
                     navController.navigate(Routes.SPEAK_SETTING)
+                },
+
+                // 로그아웃 성공 → 초기 화면
+                onLogoutSuccess = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+
+                // 회원탈퇴 성공 → 초기 화면
+                onWithdrawSuccess = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

@@ -1,13 +1,13 @@
 package com.example.aac.ui.features.flashcard_edit_delete
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -23,25 +23,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.aac.R
-import com.example.aac.ui.features.main.components.CardData
+import com.example.aac.data.remote.dto.MainWordItem
+import com.example.aac.ui.components.WordCard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
 fun FlashcardDetailDialog(
-    card: CardData?,
+    card: MainWordItem?,
     snackbarHostState: SnackbarHostState,
     coroutineScope: CoroutineScope,
     onDismiss: () -> Unit,
-    onPlay: (CardData) -> Unit = {},
-    onFavorite: (CardData, Boolean) -> Unit = { _, _ -> },
-    onEdit: (CardData) -> Unit = {},
-    onDelete: (CardData) -> Unit = {}
+    onPlay: (MainWordItem) -> Unit = {},
+    onFavorite: (MainWordItem, Boolean) -> Unit = { _, _ -> },
+    onEdit: (MainWordItem) -> Unit = {},
+    onDelete: (MainWordItem) -> Unit = {}
 ) {
     if (card == null) return
 
     var showDeleteConfirm by remember { mutableStateOf(false) }
-    var isFavorite by remember { mutableStateOf(false) }
+    var isFavorite by remember(card) { mutableStateOf(card.isFavorite) }
     val localSnackbarHostState = remember { SnackbarHostState() }
     val pointBlue = Color(0xFF0088FF)
     val defaultBorderColor = Color(0xFFD9D9D9) // #D9D9D9
@@ -72,22 +73,21 @@ fun FlashcardDetailDialog(
                         .fillMaxSize()
                         .padding(start = 51.dp, top = 32.dp, end = 51.dp, bottom = 48.dp)
                 ) {
-                    // [닫기 버튼] 5px 테두리 및 #666666 색상 적용
+                    // [닫기 버튼]
                     Surface(
                         onClick = onDismiss,
                         shape = CircleShape,
                         color = Color.White,
-                        border = BorderStroke(width = 1.dp, color = Color(0xFF666666)), // 1px 테두리
+                        border = BorderStroke(width = 1.dp, color = Color(0xFF666666)),
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .size(30.dp) // 바깥 원 크기 30x30
+                            .size(30.dp)
                     ) {
-                        // Box를 추가해서 내부 아이콘을 정중앙(Center)에 배치합니다.
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_close),
                                 contentDescription = "닫기",
-                                modifier = Modifier.size(15.dp), // X 이미지 크기 10x10
+                                modifier = Modifier.size(15.dp),
                                 tint = Color.Gray
                             )
                         }
@@ -99,26 +99,21 @@ fun FlashcardDetailDialog(
                     ) {
                         Spacer(modifier = Modifier.height(40.dp))
 
-                        // [카드 낱말] 1px 테두리 및 #D9D9D9 색상 적용
-                        Surface(
-                            color = card.bgColor,
-                            shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(1.dp, defaultBorderColor),
-                            modifier = Modifier.size(175.dp)
-                        ) {
-                            Column(
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(painterResource(R.drawable.ic_emotion), null, Modifier.size(80.dp), Color.Unspecified)
-                                Spacer(Modifier.height(12.dp))
-                                Text(card.text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
+                        // ✅ [카드 낱말] WordCard 컴포넌트 사용
+                        WordCard(
+                            text = card.word,
+                            imageUrl = card.imageUrl,
+                            partOfSpeech = card.partOfSpeech,
+                            modifier = Modifier
+                                .size(175.dp)
+                                .border(1.dp, defaultBorderColor, RoundedCornerShape(16.dp)), // 테두리 추가
+                            cornerRadius = 16.dp, // 둥글기 맞춤
+                            onClick = {} // 상세 팝업에선 클릭 동작 없음
+                        )
 
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        // [메뉴 버튼들] 공통적으로 1px #D9D9D9 테두리 적용
+                        // [메뉴 버튼들]
                         DetailMenuButton(text = "재생", icon = R.drawable.ic_play, containerColor = pointBlue, contentColor = Color.White, useDefaultInteraction = false, onClick = { onPlay(card) })
                         Spacer(modifier = Modifier.height(12.dp))
 
@@ -144,6 +139,7 @@ fun FlashcardDetailDialog(
                 }
             }
 
+            // 내부 스낵바 호스트
             SnackbarHost(
                 hostState = localSnackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp)
@@ -164,57 +160,10 @@ fun FlashcardDetailDialog(
 }
 
 @Composable
-fun FlashcardDeleteConfirmDialog(card: CardData, snackbarHostState: SnackbarHostState, coroutineScope: CoroutineScope, onDismiss: () -> Unit, onConfirmDelete: (CardData) -> Unit) {
-    val pointBlue = Color(0xFF0088FF)
-    val defaultBorderColor = Color(0xFFD9D9D9)
-
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(shape = RoundedCornerShape(32.dp), color = Color.White, modifier = Modifier.width(480.dp).wrapContentHeight()) {
-            Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Surface(
-                    color = card.bgColor,
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, defaultBorderColor),
-                    modifier = Modifier.size(175.dp)
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(painterResource(R.drawable.ic_emotion), null, Modifier.size(64.dp), Color.Unspecified)
-                        Spacer(Modifier.height(8.dp))
-                        Text(card.text, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-                Spacer(Modifier.height(24.dp))
-                Text("낱말을 삭제하시겠어요?", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(12.dp))
-                Row(modifier = Modifier.fillMaxWidth(), Arrangement.Center, Alignment.CenterVertically) {
-                    Icon(Icons.Default.Info, null, tint = pointBlue, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("삭제한 낱말은 단어 추가에서 추가 가능합니다", fontSize = 16.sp, color = pointBlue)
-                }
-                Spacer(Modifier.height(32.dp))
-                Row(Modifier.fillMaxWidth(), Arrangement.Center) {
-                    DetailMenuButton(text = "취소", modifier = Modifier.width(200.dp), onClick = onDismiss)
-                    Spacer(Modifier.width(12.dp))
-                    DetailMenuButton(text = "삭제하기", icon = R.drawable.ic_delete_2, contentColor = Color.Red, modifier = Modifier.width(200.dp), onClick = {
-                        onConfirmDelete(card)
-                        coroutineScope.launch { snackbarHostState.showSnackbar("낱말을 삭제했어요.") }
-                    })
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun DetailMenuButton(text: String, modifier: Modifier = Modifier, icon: Int? = null, imageVector: ImageVector? = null, containerColor: Color? = null, contentColor: Color = Color.Black, iconTint: Color? = null, useDefaultInteraction: Boolean = true, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val backgroundColor = if (useDefaultInteraction) { if (isPressed) Color(0xFFC4CAD4) else Color(0xFFE2E5EA) } else { containerColor ?: Color(0xFFE2E5EA) }
-
-    // 버튼 테두리 설정
     val borderColor = Color(0xFFD9D9D9)
 
     Button(
@@ -223,7 +172,7 @@ fun DetailMenuButton(text: String, modifier: Modifier = Modifier, icon: Int? = n
         modifier = modifier.then(if (modifier == Modifier) Modifier.fillMaxWidth() else Modifier).height(60.dp),
         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, borderColor), // 1px Solid Border 적용
+        border = BorderStroke(1.dp, borderColor),
         contentPadding = PaddingValues(horizontal = 20.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
