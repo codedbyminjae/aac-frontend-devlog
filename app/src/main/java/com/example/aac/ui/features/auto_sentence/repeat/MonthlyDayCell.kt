@@ -1,7 +1,6 @@
 package com.example.aac.ui.features.auto_sentence.repeat
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -21,6 +20,8 @@ fun MonthlyDayCell(
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val label = if (day == 31) "말일" else day.toString()
+
     Box(
         modifier = Modifier
             .size(39.dp)
@@ -32,11 +33,10 @@ fun MonthlyDayCell(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = day.toString(),
-            fontSize = 16.sp,
+            text = label,
+            fontSize = if (day == 31) 17.88.sp else 16.sp,
             fontWeight = FontWeight.Medium,
             color = if (selected) Color.White else Color(0xFF2C2C2C)
         )
     }
 }
-
