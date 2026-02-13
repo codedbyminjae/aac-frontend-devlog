@@ -47,7 +47,7 @@ fun RepeatCycleBottomSheet(
     }
 
     ModalBottomSheet(
-        onDismissRequest = {},
+        onDismissRequest = { onDismiss() },
         sheetState = sheetState,
         dragHandle = null,
         containerColor = Color.Transparent

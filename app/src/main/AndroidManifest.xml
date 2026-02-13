@@ -34,10 +34,20 @@
             android:screenOrientation="landscape"
             android:exported="false" />
 
+        <!-- Kakao web login redirect handler -->
         <activity
-            android:name=".ui.features.settings.SettingsActivity"
-            android:screenOrientation="landscape"
-            android:exported="false" />
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="kakaob81add2e841a814fe764875a967552fe"
+                    android:host="oauth" />
+            </intent-filter>
+        </activity>
 
     </application>
 

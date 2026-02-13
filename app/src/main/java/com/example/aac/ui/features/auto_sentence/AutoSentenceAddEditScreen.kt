@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.aac.R
-import com.example.aac.ui.components.CustomTopBar
 import com.example.aac.ui.components.CommonDeleteDialog
+import com.example.aac.ui.components.CustomTopBar
 import com.example.aac.ui.features.auto_sentence.repeat.*
 import com.example.aac.ui.features.auto_sentence.time.TimePickerBottomSheet
 import com.example.aac.ui.features.auto_sentence.time.TimeState
@@ -26,44 +26,30 @@ fun AutoSentenceAddEditScreen(
     onSave: (AutoSentenceItem) -> Unit,
     onDelete: (() -> Unit)? = null
 ) {
-
     /* ---------- 초기 상태 ---------- */
-    var sentence by rememberSaveable {
-        mutableStateOf(initialItem?.sentence ?: "")
-    }
+    var sentence by rememberSaveable { mutableStateOf(initialItem?.sentence ?: "") }
 
     var repeatSetting by remember {
         mutableStateOf(
-            initialItem?.repeatSetting
-                ?: RepeatSetting(
-                    type = RepeatType.WEEKLY,
-                    days = setOf(
-                        Weekday.TUE,
-                        Weekday.WED,
-                        Weekday.THU
-                    )
-                )
+            initialItem?.repeatSetting ?: RepeatSetting(
+                type = RepeatType.WEEKLY,
+                days = setOf(Weekday.TUE, Weekday.WED, Weekday.THU)
+            )
         )
     }
 
     var timeState by remember {
         mutableStateOf(
-            initialItem?.timeState
-                ?: TimeState(
-                    isAm = true,
-                    hour = 9,
-                    minute = 0
-                )
+            initialItem?.timeState ?: TimeState(
+                isAm = true,
+                hour = 9,
+                minute = 0
+            )
         )
     }
 
-    var isRepeatSelected by remember {
-        mutableStateOf(initialItem != null)
-    }
-
-    var isTimeSelected by remember {
-        mutableStateOf(initialItem != null)
-    }
+    var isRepeatSelected by remember { mutableStateOf(initialItem != null) }
+    var isTimeSelected by remember { mutableStateOf(initialItem != null) }
 
     /* ---------- BottomSheet / Dialog 상태 ---------- */
     var showRepeatSheet by remember { mutableStateOf(false) }
@@ -87,20 +73,11 @@ fun AutoSentenceAddEditScreen(
     }
 
     /* ---------- 타이틀 ---------- */
-    val titleText = if (mode == AutoSentenceMode.ADD) {
-        "문장 추가"
-    } else {
-        "문장 편집"
-    }
+    val titleText = if (mode == AutoSentenceMode.ADD) "문장 추가" else "문장 편집"
 
-    val isFormValid =
-        sentence.isNotBlank() && isRepeatSelected && isTimeSelected
+    val isFormValid = sentence.isNotBlank() && isRepeatSelected && isTimeSelected
 
-    val saveButtonColor = if (isFormValid) {
-        Color(0xFF1C63A8)
-    } else {
-        Color(0xFFB0B0B0)
-    }
+    val saveButtonColor = if (isFormValid) Color(0xFF1C63A8) else Color(0xFFB0B0B0)
 
     /* ---------- UI ---------- */
     Scaffold(
@@ -109,7 +86,6 @@ fun AutoSentenceAddEditScreen(
             CustomTopBar(
                 title = titleText,
                 onBackClick = onBack,
-
                 actionText = "저장하기",
                 actionColor = saveButtonColor,
                 onActionClick = {
@@ -132,7 +108,6 @@ fun AutoSentenceAddEditScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp)
         ) {
-
             Spacer(modifier = Modifier.height(24.dp))
 
             AutoSentenceInputField(
@@ -146,7 +121,6 @@ fun AutoSentenceAddEditScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
                 AutoSentenceOptionCard(
                     modifier = Modifier.weight(1f),
                     iconRes = R.drawable.ic_recycle,
@@ -167,19 +141,15 @@ fun AutoSentenceAddEditScreen(
             /* ---------- 삭제 버튼 (EDIT 모드에서만) ---------- */
             if (mode == AutoSentenceMode.EDIT && onDelete != null) {
                 Spacer(modifier = Modifier.height(32.dp))
-
-                DeleteButton(
-                    onClick = {
-                        showDeleteConfirmDialog = true
-                    }
-                )
+                DeleteButton(onClick = { showDeleteConfirmDialog = true })
             }
         }
 
         /* ---------- Repeat BottomSheet ---------- */
+        // 여기 수정: 바깥 터치 dismiss 시에도 안전하게 닫히도록
         if (showRepeatSheet) {
             RepeatCycleBottomSheet(
-                onDismiss = { showRepeatSheet = false },
+                onDismiss = { showRepeatSheet = false }, // BottomSheet 내부에서 hide 후 호출되게 바꾸는 게 핵심(RepeatCycleBottomSheet.kt에서 수정)
                 onComplete = { newSetting ->
                     repeatSetting = newSetting
                     isRepeatSelected = true

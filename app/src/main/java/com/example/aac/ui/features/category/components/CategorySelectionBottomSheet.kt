@@ -1,5 +1,6 @@
 package com.example.aac.ui.features.category.components
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,27 +28,15 @@ import com.example.aac.ui.features.category.CategoryEditData
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategorySelectionBottomSheet(
-    categoryList: List<CategoryEditData>,
+    categoryList: List<CategoryEditData>, // 🔥 [핵심] 상위에서 받은 이 실 데이터를 써야 합니다!
     onDismissRequest: () -> Unit,
     onCategorySelected: (CategoryEditData) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var selectedCategory by remember { mutableStateOf<CategoryEditData?>(null) }
 
-    val displayList = remember {
-        listOf(
-            CategoryEditData(iconRes = R.drawable.ic_default, title = "최근사용", count = 0),
-            CategoryEditData(iconRes = R.drawable.ic_favorite, title = "즐겨찾기", count = 0),
-            CategoryEditData(iconRes = R.drawable.ic_default, title = "기본", count = 0),
-            CategoryEditData(iconRes = R.drawable.ic_human, title = "사람", count = 0),
-            CategoryEditData(iconRes = R.drawable.ic_act, title = "행동", count = 0),
-            CategoryEditData(iconRes = R.drawable.ic_emotion, title = "감정", count = 0),
-            CategoryEditData(iconRes = R.drawable.ic_food, title = "음식", count = 0),
-            CategoryEditData(iconRes = R.drawable.ic_place, title = "장소", count = 0),
-            CategoryEditData(iconRes = R.drawable.ic_act, title = "신체", count = 0),
-            CategoryEditData(iconRes = R.drawable.ic_question, title = "어미", count = 0)
-        )
-    }
+    // ❌ [삭제] 이 가짜 리스트 때문에 ID가 전달되지 않았습니다.
+    // val displayList = remember { ... }
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -89,18 +78,22 @@ fun CategorySelectionBottomSheet(
                 }
             }
 
-            // [2] 리스트
+            // [2] 리스트 (수정됨)
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                // items(categoryList) { item ->
-                items(displayList) { item ->
+                // 🔥 [핵심 수정] displayList 대신 categoryList 사용
+                items(categoryList) { item ->
                     CategoryItemCard(
                         category = item,
+                        // 객체 비교 (ID가 있다면 ID로 비교하는게 더 안전하지만, 일단 객체 비교로 진행)
                         isSelected = selectedCategory == item,
-                        onClick = { selectedCategory = item }
+                        onClick = {
+                            Log.d("SHEET_DEBUG", "👇 [클릭] ${item.title} (ID: ${item.id})")
+                            selectedCategory = item
+                        }
                     )
                 }
             }
@@ -110,7 +103,14 @@ fun CategorySelectionBottomSheet(
             // [3] 완료 버튼
             Button(
                 onClick = {
-                    selectedCategory?.let { onCategorySelected(it) } ?: onDismissRequest()
+                    if (selectedCategory != null) {
+                        Log.d("SHEET_DEBUG", "✅ [완료] 선택된 카테고리 반환: ${selectedCategory?.title} (ID: ${selectedCategory?.id})")
+                        // ID가 포함된 실제 객체를 상위로 전달
+                        onCategorySelected(selectedCategory!!)
+                        onDismissRequest() // 시트 닫기
+                    } else {
+                        onDismissRequest()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)),
                 shape = RoundedCornerShape(8.dp),
@@ -151,8 +151,11 @@ fun CategoryItemCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // 아이콘 리소스가 0이거나 잘못되었을 때 기본 아이콘 처리
+        val icon = if (category.iconRes != 0) category.iconRes else R.drawable.ic_default
+
         Icon(
-            painter = painterResource(id = category.iconRes),
+            painter = painterResource(id = icon),
             contentDescription = null,
             tint = Color.Unspecified,
             modifier = Modifier.size(32.dp)

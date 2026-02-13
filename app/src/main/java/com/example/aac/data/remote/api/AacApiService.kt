@@ -7,9 +7,7 @@ interface AacApiService {
 
     // [Auth] 게스트 로그인
     @POST("api/auth/guest")
-    suspend fun createGuestAccount(
-        @Body request: GuestLoginRequest
-    ): GuestLoginResponse
+    suspend fun createGuestAccount(@Body request: GuestLoginRequest): GuestLoginResponse
 
     // [Auth] 내 정보 조회
     @GET("api/auth/me")
@@ -23,6 +21,9 @@ interface AacApiService {
     @DELETE("api/auth/account")
     suspend fun withdraw(): BaseResponse<Unit>
 
+    // ----------------------------------------------------
+    // 🔥 [Main] 단어 목록 조회 (여기가 중요!)
+    // ----------------------------------------------------
     // [Auth] 카카오 SDK 로그인
     @POST("api/auth/kakao/sdk")
     suspend fun kakaoLogin(
@@ -53,9 +54,7 @@ interface AacApiService {
 
     // 카테고리 생성
     @POST("api/categories")
-    suspend fun createCategory(
-        @Body request: CreateCategoryRequest
-    ): BaseResponse<CategoryResponse>
+    suspend fun createCategory(@Body request: CreateCategoryRequest): BaseResponse<CategoryResponse>
 
     // 카테고리 수정
     @PATCH("api/categories/{id}")
@@ -66,15 +65,11 @@ interface AacApiService {
 
     // 카테고리 삭제
     @DELETE("api/categories/{id}")
-    suspend fun deleteCategory(
-        @Path("id") id: String
-    ): BaseResponse<DeleteCategoryResponse>
+    suspend fun deleteCategory(@Path("id") id: String): BaseResponse<DeleteCategoryResponse>
 
     // 카테고리 순서 변경
     @PATCH("api/order/categories")
-    suspend fun updateCategoryOrders(
-        @Body request: CategoryOrderRequest
-    ): BaseResponse<CategoryResponse>
+    suspend fun updateCategoryOrders(@Body request: CategoryOrderRequest): BaseResponse<CategoryResponse>
 
     // [Setting] 그리드 설정 조회
     @GET("api/settings/grid")
@@ -82,13 +77,9 @@ interface AacApiService {
 
     // [Setting] 그리드 설정 수정
     @PATCH("api/settings/grid")
-    suspend fun updateGridSetting(
-        @Body request: GridSettingRequest
-    ): GridSettingResponse
+    suspend fun updateGridSetting(@Body request: GridSettingRequest): GridSettingResponse
 
     // [AI] 문장 추천
     @POST("api/ai/predictions")
-    suspend fun getAiPredictions(
-        @Body request: AiPredictionRequest
-    ): AiPredictionResponse
+    suspend fun getAiPredictions(@Body request: AiPredictionRequest): AiPredictionResponse
 }

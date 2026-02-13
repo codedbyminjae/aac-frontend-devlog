@@ -1,19 +1,11 @@
 package com.example.aac.ui.features.category.components
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.BorderStroke
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material3.Icon
@@ -22,33 +14,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aac.R
+import com.example.aac.data.mapper.IconMapper
 import com.example.aac.domain.model.Category
 import com.example.aac.domain.model.Word
 import com.example.aac.ui.components.CommonDeleteDialog
-import com.example.aac.ui.components.WordCard
 import com.example.aac.ui.features.category.CategoryEditData
-import kotlinx.coroutines.launch
-import sh.calvin.reorderable.*
-
-// ✅ 시스템 기본 폰트 + 피그마 스타일 (15px, 500)
-val FigmaTextStyle = TextStyle(
-    fontWeight = FontWeight.Medium, // 500
-    fontSize = 15.sp,
-    lineHeight = 15.sp,
-    letterSpacing = 0.sp,
-    textAlign = TextAlign.Center,
-    platformStyle = PlatformTextStyle(includeFontPadding = false)
-)
 
 @Composable
 fun WordCardManagementContent(
@@ -57,32 +32,34 @@ fun WordCardManagementContent(
     selectedCategoryId: String?,
     onCategorySelect: (String?) -> Unit
 ) {
+    // 🔍 [로그 1] 상태 변경 확인
+    LaunchedEffect(selectedCategoryId) {
+        val name = categories.find { it.id == selectedCategoryId }?.name ?: "전체"
+        Log.d("CATEGORY_DEBUG", "🔄 [UI 필터 갱신] 선택된 ID: $selectedCategoryId ($name)")
+    }
+
+    // 🔥 [핵심 1] 화면에 보여줄 낱말 리스트 필터링 (Client-Side Filtering)
+    // 서버가 전체를 주더라도, 여기서 내 카테고리꺼만 골라내서 보여줍니다.
+    val filteredWords = remember(wordList, selectedCategoryId) {
+        if (selectedCategoryId == null) {
+            wordList // 전체 선택이면 다 보여줌
+        } else {
+            // 선택된 카테고리 ID와 일치하는 낱말만 남김
+            wordList.filter { it.categoryId == selectedCategoryId }
+        }
+    }
+
+    // 필터링된 리스트를 UI 상태로 변환
+    val uiList = remember(filteredWords) { filteredWords.toMutableStateList() }
+
     var showAddDialog by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedWord by remember { mutableStateOf<Word?>(null) }
 
-    val uiList = remember(wordList) { wordList.toMutableStateList() }
-
     val currentCategoryName = remember(selectedCategoryId, categories) {
         if (selectedCategoryId == null) "전체"
         else categories.find { it.id == selectedCategoryId }?.name ?: "전체"
-    }
-
-    val coroutineScope = rememberCoroutineScope()
-    val gridState = rememberLazyGridState()
-    val itemsPerPage = 21
-
-    val reorderableState = rememberReorderableLazyGridState(gridState) { from, to ->
-        val fromId = from.key as? String
-        val toId = to.key as? String
-        if (fromId != null && toId != null) {
-            val fromIndex = uiList.indexOfFirst { it.cardId == fromId }
-            val toIndex = uiList.indexOfFirst { it.cardId == toId }
-            if (fromIndex != -1 && toIndex != -1 && fromIndex != toIndex) {
-                uiList.apply { add(toIndex, removeAt(fromIndex)) }
-            }
-        }
     }
 
     Box(
@@ -95,109 +72,34 @@ fun WordCardManagementContent(
             modifier = Modifier
                 .width(1116.dp)
                 .fillMaxHeight()
-                .padding(vertical = 16.dp)
+                .padding(vertical = 12.dp)
         ) {
             TipBox(text = "팁 : 낱말 카드를 드래그하여 순서를 변경하실 수 있어요. 자주 사용하는 낱말을 쉽게 찾을 수 있는 위치에 배치해보세요!")
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             CategorySelectorBar(
                 currentCategory = currentCategoryName,
                 onClick = { showCategorySheet = true }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                // [좌측] 낱말 카드 그리드 영역
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.White)
-                        .padding(start = 24.dp, end = 24.dp, bottom = 24.dp, top = 4.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(1057.dp)
-                            .height(550.dp)
-                    ) {
-                        LazyVerticalGrid(
-                            state = gridState,
-                            columns = GridCells.Fixed(7),
-                            horizontalArrangement = Arrangement.spacedBy(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(2.dp),
-                            contentPadding = PaddingValues(top = 0.dp, bottom = 20.dp),
-                            userScrollEnabled = false,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            item(key = "ADD_BUTTON") {
-                                AddWordCardItem(onClick = { showAddDialog = true })
-                            }
-                            items(uiList, key = { it.cardId }) { item ->
-                                ReorderableItem(state = reorderableState, key = item.cardId) { isDragging ->
-                                    val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp, label = "elevation")
-                                    WordCard(
-                                        text = item.word,
-                                        imageUrl = item.imageUrl,
-                                        partOfSpeech = item.partOfSpeech,
-                                        modifier = Modifier
-                                            .size(130.dp)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .shadow(elevation, RoundedCornerShape(12.dp))
-                                            .draggableHandle(),
-                                        onClick = {
-                                            selectedWord = item
-                                            showDeleteDialog = true
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                // [우측] 스크롤 버튼 영역
-                Column(
-                    modifier = Modifier
-                        .width(51.dp)
-                        .fillMaxHeight(),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    // ▲ 위로 버튼
-                    ScrollButton(
-                        imageRes = R.drawable.btn_up,
-                        label = "위로",
-                        modifier = Modifier.weight(1f), // 🔥 남은 공간의 절반 차지
-                        onClick = {
-                            coroutineScope.launch {
-                                val target = (gridState.firstVisibleItemIndex - itemsPerPage).coerceAtLeast(0)
-                                gridState.animateScrollToItem(target)
-                            }
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(9.dp))
-
-                    // ▼ 아래로 버튼
-                    ScrollButton(
-                        imageRes = R.drawable.btn_down,
-                        label = "아래로",
-                        modifier = Modifier.weight(1f), // 🔥 남은 공간의 절반 차지
-                        onClick = {
-                            coroutineScope.launch {
-                                val target = gridState.firstVisibleItemIndex + itemsPerPage
-                                gridState.animateScrollToItem(target)
-                            }
+                if (currentCategoryName.trim() == "어미") {
+                    EndingWordContent(onAddClick = { showAddDialog = true })
+                } else {
+                    // 🔥 필터링된 uiList를 전달
+                    GeneralWordContent(
+                        uiList = uiList,
+                        onAddClick = { showAddDialog = true },
+                        onWordClick = { item ->
+                            selectedWord = item
+                            showDeleteDialog = true
                         }
                     )
                 }
@@ -205,23 +107,35 @@ fun WordCardManagementContent(
         }
     }
 
-    // (다이얼로그 로직)
-    if (showAddDialog) {
-        AddWordCardDialog(
-            onDismissRequest = { showAddDialog = false },
-            onSaveClick = { showAddDialog = false }
-        )
-    }
+    if (showAddDialog) showAddDialog = false
 
     if (showCategorySheet) {
-        val sheetData = categories.map {
-            CategoryEditData(id = it.id, title = it.name, iconRes = R.drawable.ic_default, count = 0)
+        // 🔥 [핵심 2] 바텀시트 데이터 생성 시 ID 누락 방지
+        val sheetData = remember(categories) {
+            val allOption = CategoryEditData(id = null, title = "전체", iconRes = R.drawable.ic_default, count = 0)
+
+            val mappedCategories = categories.map { category ->
+                // 로그를 찍어서 매핑 시점에 ID가 있는지 확인
+                if (category.id.isEmpty()) Log.e("CATEGORY_DEBUG", "⚠️ 경고: 카테고리 [${category.name}]의 ID가 비어있습니다!")
+
+                CategoryEditData(
+                    id = category.id, // 여기서 ID가 잘 들어가는지 확인
+                    title = category.name,
+                    iconRes = IconMapper.toLocalResource(category.iconKey),
+                    count = 0
+                )
+            }
+            listOf(allOption) + mappedCategories
         }
+
         CategorySelectionBottomSheet(
             categoryList = sheetData,
             onDismissRequest = { showCategorySheet = false },
-            onCategorySelected = { selectedCategory ->
-                onCategorySelect(selectedCategory.id)
+            onCategorySelected = { selectedItem ->
+                Log.d("CATEGORY_DEBUG", "👉 [사용자 선택] ${selectedItem.title} (ID: ${selectedItem.id})")
+
+                // 뷰모델 호출
+                onCategorySelect(selectedItem.id)
                 showCategorySheet = false
             }
         )
@@ -236,80 +150,6 @@ fun WordCardManagementContent(
                 showDeleteDialog = false
             }
         )
-    }
-}
-
-// ==========================================
-// 👇 하위 컴포넌트
-// ==========================================
-
-@Composable
-fun ScrollButton(
-    imageRes: Int,
-    label: String,
-    modifier: Modifier = Modifier, // ✅ weight를 받기 위한 파라미터 추가
-    onClick: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(Color(0xFF66B3FF))
-            .clickable(onClick = onClick)
-            .padding(vertical = 1.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier.size(25.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = imageRes),
-                contentDescription = label,
-                tint = Color.Unspecified,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        Spacer(modifier = Modifier.height(9.dp))
-
-        Text(
-            text = label,
-            color = Color.White,
-            style = FigmaTextStyle
-        )
-    }
-}
-
-@Composable
-fun AddWordCardItem(onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .size(130.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF8F9FA))
-            .border(
-                BorderStroke(2.dp, Color(0xFFE0E0E0)),
-                RoundedCornerShape(12.dp)
-            )
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = Icons.Default.AddCircleOutline,
-                contentDescription = null,
-                tint = Color(0xFF267FD6),
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "낱말 추가",
-                color = Color(0xFF267FD6),
-                style = FigmaTextStyle
-            )
-        }
     }
 }
 
