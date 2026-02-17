@@ -9,7 +9,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.aac.data.mapper.toAutoSentenceItem
+import com.example.aac.data.mapper.toCreateRoutineRequest
+import com.example.aac.data.mapper.toRoutineUpdateRequest
+import com.example.aac.data.repository.SentenceDataRepository
 import com.example.aac.ui.features.ai_sentence.ui.AiSentenceEditScreen
+import com.example.aac.ui.features.ai_sentence.ui.AiSentenceScreen
 import com.example.aac.ui.features.auth.AuthViewModel
 import com.example.aac.ui.features.auto_sentence.*
 import com.example.aac.ui.features.category.CategoryManagementScreen
@@ -21,9 +26,6 @@ import com.example.aac.ui.features.terms.TermsScreen
 import com.example.aac.ui.features.login.LoginRoute
 import com.example.aac.ui.features.usage_history.UsageHistoryActivity
 import com.example.aac.ui.features.voice_setting.VoiceSettingScreen
-import com.example.aac.ui.features.ai_sentence.ui.AiSentenceScreen
-import com.example.aac.data.repository.SentenceDataRepository
-
 
 @Composable
 fun AppNavGraph() {
@@ -32,11 +34,11 @@ fun AppNavGraph() {
     /* ---------- AuthViewModel 단일 생성 ---------- */
     val authViewModel: AuthViewModel = viewModel()
 
-    /* ---------- 자동 문장 리스트 (공용 상태) ---------- */
-    var autoSentenceList by remember { mutableStateOf(listOf<AutoSentenceItem>()) }
-
     /* ---------- 목소리 설정 선택 상태 ---------- */
     var voiceSettingId by remember { mutableStateOf("default_male") }
+
+    /* ---------- 루틴 API(ViewModel) 공용 ---------- */
+    val routineVm: AutoSentenceRoutineViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -48,9 +50,7 @@ fun AppNavGraph() {
             LoginRoute(
                 viewModel = authViewModel,
                 onNavigateToTerms = {
-                    navController.navigate(Routes.TERMS) {
-                        launchSingleTop = true
-                    }
+                    navController.navigate(Routes.TERMS) { launchSingleTop = true }
                 },
                 onNavigateToMain = {
                     navController.navigate(Routes.MAIN) {
@@ -71,7 +71,7 @@ fun AppNavGraph() {
                         popUpTo(Routes.TERMS) { inclusive = true }
                         launchSingleTop = true
                     }
-                    authViewModel.resetSignupState() // 이벤트 소비
+                    authViewModel.resetSignupState()
                 }
             }
 
@@ -79,10 +79,7 @@ fun AppNavGraph() {
                 navController = navController,
                 authViewModel = authViewModel,
                 onBackClick = {
-                    // 가입 플로우 취소 (pendingToken 폐기)
                     authViewModel.cancelSignupFlow()
-
-                    // 로그인 화면으로 이동 + Terms 스택 정리
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.TERMS) { inclusive = true }
                         launchSingleTop = true
@@ -97,7 +94,6 @@ fun AppNavGraph() {
             arguments = listOf(navArgument("termId") { type = NavType.StringType })
         ) { backStackEntry ->
             val termId = backStackEntry.arguments?.getString("termId") ?: ""
-
             TermsDetailScreen(
                 termId = termId,
                 authViewModel = authViewModel,
@@ -159,16 +155,14 @@ fun AppNavGraph() {
             VoiceSettingScreen(
                 initialSelectedId = voiceSettingId,
                 onBackClick = { navController.popBackStack() },
-                onSave = { selectedId ->
-                    voiceSettingId = selectedId
-                }
+                onSave = { selectedId -> voiceSettingId = selectedId }
             )
         }
 
+        /* ---------- AI SENTENCE ---------- */
         composable(Routes.AI_SENTENCE) {
             AiSentenceScreen(
                 initialWords = SentenceDataRepository.selectedWords,
-
                 onBack = { navController.popBackStack() },
                 onEditNavigate = { text ->
                     navController.navigate(Routes.aiSentenceEditRoute(text))
@@ -187,7 +181,6 @@ fun AppNavGraph() {
             )
         ) { backStackEntry ->
             val text = backStackEntry.arguments?.getString("text").orEmpty()
-
             AiSentenceEditScreen(
                 initialText = text,
                 onBack = { navController.popBackStack() }
@@ -196,17 +189,30 @@ fun AppNavGraph() {
 
         /* ---------- AUTO SENTENCE SETTING ---------- */
         composable(Routes.AUTO_SENTENCE_SETTING) {
+
             AutoSentenceSettingScreen(
                 onBack = { navController.popBackStack() },
-                onAddClick = { navController.navigate(Routes.AUTO_SENTENCE_ADD) },
-                onEditClick = { item ->
-                    navController.navigate(Routes.autoSentenceEditRoute(item.id))
+
+                onAddClick = {
+                    navController.navigate(Routes.AUTO_SENTENCE_ADD)
                 },
-                onSelectDeleteClick = { navController.navigate(Routes.AUTO_SENTENCE_SELECT_DELETE) },
-                onDeleteAll = { autoSentenceList = emptyList() },
-                autoSentenceList = autoSentenceList
+
+                onEditClick = { item ->
+                    navController.navigate(
+                        Routes.autoSentenceEditRoute(item.serverId)
+                    )
+                },
+
+                onSelectDeleteClick = {
+                    navController.navigate(Routes.AUTO_SENTENCE_SELECT_DELETE)
+                },
+
+                routineViewModel = routineVm,
+                routineToItem = { dto -> dto.toAutoSentenceItem() }
             )
         }
+
+
 
         /* ---------- AUTO SENTENCE ADD ---------- */
         composable(Routes.AUTO_SENTENCE_ADD) {
@@ -215,8 +221,10 @@ fun AppNavGraph() {
                 initialItem = null,
                 onBack = { navController.popBackStack() },
                 onSave = { item ->
-                    autoSentenceList = listOf(item) + autoSentenceList
-                    navController.popBackStack()
+                    routineVm.createRoutine(
+                        request = item.toCreateRoutineRequest(),
+                        onSuccess = { navController.popBackStack() }
+                    )
                 }
             )
         }
@@ -224,54 +232,106 @@ fun AppNavGraph() {
         /* ---------- AUTO SENTENCE EDIT ---------- */
         composable(
             route = Routes.AUTO_SENTENCE_EDIT,
-            arguments = listOf(navArgument("itemId") { type = NavType.LongType })
+            arguments = listOf(navArgument("serverId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val itemId = backStackEntry.arguments?.getLong("itemId")
-            val targetItem = autoSentenceList.find { it.id == itemId }
+
+            val serverId = backStackEntry.arguments?.getString("serverId").orEmpty()
+            val routineUiState by routineVm.uiState.collectAsState()
+
+            LaunchedEffect(serverId) {
+                if (routineUiState.routines.isEmpty()) {
+                    routineVm.fetchRoutines()
+                }
+            }
+
+            val serverItems = remember(routineUiState.routines) {
+                routineUiState.routines.map { it.toAutoSentenceItem() }
+            }
+
+            val targetItem = remember(serverId, serverItems) {
+                serverItems.find { it.serverId == serverId }
+            }
 
             if (targetItem != null) {
+
                 AutoSentenceAddEditScreen(
                     mode = AutoSentenceMode.EDIT,
                     initialItem = targetItem,
+
                     onBack = { navController.popBackStack() },
+
                     onSave = { updatedItem ->
-                        autoSentenceList = autoSentenceList.map {
-                            if (it.id == targetItem.id) updatedItem.copy(id = targetItem.id) else it
-                        }
-                        navController.popBackStack()
+                        routineVm.updateRoutine(
+                            id = targetItem.serverId,
+                            request = updatedItem.copy(
+                                id = targetItem.id,
+                                serverId = targetItem.serverId
+                            ).toRoutineUpdateRequest(),
+                            onSuccess = {
+                                navController.popBackStack()
+                            }
+                        )
                     },
                     onDelete = {
-                        autoSentenceList = autoSentenceList.filter { it.id != targetItem.id }
+                        routineVm.deleteRoutine(
+                            id = targetItem.serverId,
+                            onSuccess = {
+                                navController.navigate(Routes.AUTO_SENTENCE_SETTING) {
+                                    popUpTo(Routes.AUTO_SENTENCE_SETTING) {
+                                        inclusive = false
+                                    }
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
+                    }
+
+                )
+
+            } else {
+                LaunchedEffect(routineUiState.isLoading, routineUiState.routines) {
+                    if (!routineUiState.isLoading && routineUiState.routines.isNotEmpty()) {
                         navController.popBackStack()
                     }
-                )
+                }
             }
         }
 
         /* ---------- AUTO SENTENCE SELECT DELETE ---------- */
         composable(Routes.AUTO_SENTENCE_SELECT_DELETE) {
+
+            val routineUiState by routineVm.uiState.collectAsState()
+
+            val items = remember(routineUiState.routines) {
+                routineUiState.routines.map { it.toAutoSentenceItem() }
+            }
             AutoSentenceSelectDeleteScreen(
-                autoSentenceList = autoSentenceList,
-                onBack = { navController.popBackStack() },
-                onDeleteSelected = { selectedIds ->
-                    autoSentenceList = autoSentenceList.filterNot { selectedIds.contains(it.id) }
+                autoSentenceList = items,
+                onBack = {
                     navController.popBackStack()
+                },
+                onDeleteSelected = { selectedUiIds ->
+                    val selectedServerIds = items
+                        .filter { selectedUiIds.contains(it.id) }
+                        .map { it.serverId }
+                    routineVm.deleteRoutines(
+                        ids = selectedServerIds,
+                        onSuccess = {
+                            navController.popBackStack()
+                        }
+                    )
                 }
             )
         }
 
         /* ---------- CATEGORY MANAGEMENT ---------- */
         composable(Routes.CATEGORY_MANAGEMENT) {
-            CategoryManagementScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            CategoryManagementScreen(onBackClick = { navController.popBackStack() })
         }
 
         /* ---------- SPEAK SETTING ---------- */
         composable(Routes.SPEAK_SETTING) {
-            SpeakSettingScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            SpeakSettingScreen(onBackClick = { navController.popBackStack() })
         }
     }
 }
