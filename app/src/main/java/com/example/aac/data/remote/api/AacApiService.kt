@@ -147,4 +147,25 @@ interface AacApiService {
     @DELETE("api/routines/all")
     suspend fun deleteAllRoutines(): BaseResponse<DeleteAllRoutinesResponse>
 
+    // ----------------------------------------------------
+    // [Routine Modal - 자동 출력 문장 모달]
+    // ----------------------------------------------------
+
+    // [Routine Modal] 현재 시간에 해당하는 루틴 1건 조회
+    @GET("api/routines/modal")
+    suspend fun getRoutineModal(): BaseResponse<RoutineModalResponse>
+
+    // [Routine Modal] 5분 뒤 다시 알림 (snooze)
+    @POST("api/routines/{id}/modal/snooze")
+    suspend fun snoozeRoutineModal(
+        @Path("id") id: String
+    ): BaseResponse<RoutineModalResponse>
+
+    // [Routine Modal] 오늘 끄기 (dismiss)
+    @POST("api/routines/{id}/modal/dismiss")
+    suspend fun dismissRoutineModal(
+        @Path("id") id: String
+    ): BaseResponse<RoutineModalResponse>
+
+
 }
