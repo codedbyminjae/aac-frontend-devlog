@@ -91,6 +91,8 @@ fun AutoSentenceAddEditScreen(
                 onActionClick = {
                     if (isFormValid) {
                         val item = AutoSentenceItem(
+                            id = initialItem?.id ?: System.currentTimeMillis(),
+                            serverId = initialItem?.serverId ?: "",   // ADD면 아직 서버 id 없으니 빈 값
                             sentence = sentence,
                             repeatSetting = repeatSetting,
                             timeState = timeState
@@ -149,7 +151,7 @@ fun AutoSentenceAddEditScreen(
         // 여기 수정: 바깥 터치 dismiss 시에도 안전하게 닫히도록
         if (showRepeatSheet) {
             RepeatCycleBottomSheet(
-                onDismiss = { showRepeatSheet = false }, // BottomSheet 내부에서 hide 후 호출되게 바꾸는 게 핵심(RepeatCycleBottomSheet.kt에서 수정)
+                onDismiss = { showRepeatSheet = false },
                 onComplete = { newSetting ->
                     repeatSetting = newSetting
                     isRepeatSelected = true
