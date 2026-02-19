@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,8 +33,13 @@ fun AutoSentenceSettingScreen(
 
     routineViewModel: AutoSentenceRoutineViewModel,
 
-    routineToItem: (RoutineDto) -> AutoSentenceItem
+    routineToItem: (RoutineDto) -> AutoSentenceItem,
+
+    // TTS 목소리 키(선택): AppNavGraph에서 voiceSettingId 넘겨주면 됨
+    voiceKey: String? = null
 ) {
+
+    val context = LocalContext.current
 
     var showMoreMenu by rememberSaveable { mutableStateOf(false) }
     var showDeleteAllDialog by remember { mutableStateOf(false) }
@@ -118,6 +124,17 @@ fun AutoSentenceSettingScreen(
                     autoSentenceList.forEach { item ->
                         AutoSentenceItemCard(
                             item = item,
+
+                            // 카드 내 "재생" 버튼 → 서버 MP3 TTS 재생
+                            onSoundClick = { clicked ->
+                                routineViewModel.playRoutineTts(
+                                    context = context,
+                                    text = clicked.sentence,
+                                    voiceKey = voiceKey
+                                )
+                            },
+
+                            // 기존: 카드 클릭(편집 이동)
                             onItemClick = { onEditClick(item) }
                         )
                         Spacer(modifier = Modifier.height(12.dp))

@@ -36,30 +36,48 @@ import com.example.aac.ui.features.voice_setting.VoiceSettingScreen
 fun AppNavGraph() {
 
     val navController = rememberNavController()
-
-    /* ---------- AuthViewModel 단일 생성 ---------- */
     val authViewModel: AuthViewModel = viewModel()
-
-    /* ---------- 목소리 설정 선택 상태 ---------- */
-    var voiceSettingId by remember { mutableStateOf("default_male") }
-
-    /* ---------- 루틴 API(ViewModel) 공용 ---------- */
     val routineVm: AutoSentenceRoutineViewModel = viewModel()
 
-    /* ---------- 🔥 전역 모달 상태 구독 ---------- */
-    val modalRoutine by routineVm.modalRoutine.collectAsState()
+    var voiceSettingId by remember { mutableStateOf("default_male") }
 
-    /* ---------- 🔥 1분 polling (앱 켜져있는 동안만) ---------- */
-    LaunchedEffect(Unit) {
-        while (true) {
-            routineVm.checkRoutineModal()
-            delay(60_000)
+    val modalRoutine by routineVm.modalRoutine.collectAsState()
+    val logoutCompleted by authViewModel.logoutCompleted.collectAsState()
+    val withdrawCompleted by authViewModel.withdrawCompleted.collectAsState()
+
+    /* ---------- 🔥 로그인 상태일 때만 1분 polling ---------- */
+    val loginState by authViewModel.loginState.collectAsState()
+
+    LaunchedEffect(loginState) {
+        if (loginState != null) {
+            routineVm.checkRoutineModal() // 즉시 1회
+            while (loginState != null) {
+                delay(60_000)
+                routineVm.checkRoutineModal()
+            }
         }
     }
 
+    /* ---------- 로그아웃 처리 ---------- */
+    LaunchedEffect(logoutCompleted) {
+        if (logoutCompleted) {
+            navController.navigate(Routes.LOGIN) {
+                popUpTo(0) { inclusive = true }
+            }
+            authViewModel.consumeLogoutCompleted()
+        }
+    }
 
+    /* ---------- 회원탈퇴 처리 ---------- */
+    LaunchedEffect(withdrawCompleted) {
+        if (withdrawCompleted) {
+            navController.navigate(Routes.LOGIN) {
+                popUpTo(0) { inclusive = true }
+            }
+            authViewModel.consumeWithdrawCompleted()
+        }
+    }
 
-    /* ---------- 🔥 전체를 Box로 감싸서 전역 오버레이 가능 ---------- */
     Box(modifier = Modifier.fillMaxSize()) {
 
         NavHost(
@@ -224,7 +242,9 @@ fun AppNavGraph() {
                             request = item.toCreateRoutineRequest(),
                             onSuccess = { navController.popBackStack() }
                         )
-                    }
+                    },
+                    routineViewModel = routineVm,
+                    voiceKey = voiceSettingId
                 )
             }
 
@@ -243,44 +263,47 @@ fun AppNavGraph() {
                     }
                 }
 
-                val serverItems = routineUiState.routines.map {
-                    it.toAutoSentenceItem()
+                val serverItems = routineUiState.routines.map { dto ->
+                    dto.toAutoSentenceItem()
                 }
 
-                val targetItem = serverItems.find {
-                    it.serverId == serverId
+                val targetItem = serverItems.find { item ->
+                    item.serverId == serverId
                 }
 
-                targetItem?.let {
+                targetItem?.let { item ->
                     AutoSentenceAddEditScreen(
                         mode = AutoSentenceMode.EDIT,
-                        initialItem = it,
+                        initialItem = item,
                         onBack = { navController.popBackStack() },
                         onSave = { updatedItem ->
                             routineVm.updateRoutine(
-                                id = it.serverId,
+                                id = item.serverId,
                                 request = updatedItem.toRoutineUpdateRequest(),
                                 onSuccess = { navController.popBackStack() }
                             )
                         },
                         onDelete = {
                             routineVm.deleteRoutine(
-                                id = it.serverId,
+                                id = item.serverId,
                                 onSuccess = {
                                     navController.navigate(Routes.AUTO_SENTENCE_SETTING) {
-                                        popUpTo(Routes.AUTO_SENTENCE_SETTING) {
-                                            inclusive = false
-                                        }
+                                        popUpTo(Routes.AUTO_SENTENCE_SETTING) { inclusive = false }
                                     }
                                 }
                             )
-                        }
+                        },
+                        // 추가: 미리듣기(TTS)용
+                        routineViewModel = routineVm,
+                        voiceKey = voiceSettingId
                     )
                 }
             }
 
+
             /* ---------- AUTO SENTENCE SELECT DELETE ---------- */
             composable(Routes.AUTO_SENTENCE_SELECT_DELETE) {
+
                 val routineUiState by routineVm.uiState.collectAsState()
 
                 val items = routineUiState.routines.map {
@@ -303,6 +326,8 @@ fun AppNavGraph() {
                 )
             }
 
+
+
             /* ---------- CATEGORY MANAGEMENT ---------- */
             composable(Routes.CATEGORY_MANAGEMENT) {
                 CategoryManagementScreen(
@@ -318,20 +343,16 @@ fun AppNavGraph() {
             }
         }
 
-        /* ---------- 🔥 전역 모달 오버레이 ---------- */
-        modalRoutine?.let { routine ->
-            Log.d("MODAL", "🔥 현재 모달 routine id = ${routine.id}")
+        /* ---------- 전역 모달 ---------- */
+        val context = LocalContext.current
 
+        modalRoutine?.let { routine ->
             RoutineModal(
                 routine = routine,
-                onSnoozeClick = {
-                    routineVm.snoozeRoutine(routine.id)
-                },
-                onDismissClick = {
-                    routineVm.dismissRoutine(routine.id)
-                }
+                onSnoozeClick = { routineVm.snoozeRoutine(routine.id) },
+                onDismissClick = { routineVm.dismissRoutine(routine.id) },
+                onPlayClick = { routineVm.playRoutineTts(context, routine.message, null) }
             )
         }
-
     }
 }

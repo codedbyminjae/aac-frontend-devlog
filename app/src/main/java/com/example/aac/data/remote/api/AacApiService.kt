@@ -2,6 +2,11 @@ package com.example.aac.data.remote.api
 
 import com.example.aac.data.remote.dto.*
 import retrofit2.http.*
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.http.Headers
+import retrofit2.http.Streaming
+
 
 interface AacApiService {
 
@@ -115,6 +120,16 @@ interface AacApiService {
         @Body request: AiPredictionRequest
     ): AiPredictionResponse
 
+    // [AI] TTS (MP3 바이너리 응답)
+    @Streaming
+    @POST("api/ai/tts")
+    @Headers(
+        "Accept: audio/mpeg",
+        "Content-Type: application/json"
+    )
+    suspend fun requestTtsMp3(
+        @Body request: TtsRequest
+    ): Response<ResponseBody>
 
     // ----------------------------------------------------
     // [Routine - 자동 출력 문장]
@@ -158,7 +173,8 @@ interface AacApiService {
     // [Routine Modal] 5분 뒤 다시 알림 (snooze)
     @POST("api/routines/{id}/modal/snooze")
     suspend fun snoozeRoutineModal(
-        @Path("id") id: String
+        @Path("id") id: String,
+        @Body body: SnoozeRequest
     ): BaseResponse<RoutineModalResponse>
 
     // [Routine Modal] 오늘 끄기 (dismiss)
