@@ -50,14 +50,15 @@ fun AppNavGraph() {
 
     LaunchedEffect(loginState) {
         if (loginState != null) {
+            routineVm.checkRoutineModal() // 즉시 1회
             while (loginState != null) {
-                routineVm.checkRoutineModal()
                 delay(60_000)
+                routineVm.checkRoutineModal()
             }
         }
     }
 
-    /* ---------- 🔥 로그아웃 처리 ---------- */
+    /* ---------- 로그아웃 처리 ---------- */
     LaunchedEffect(logoutCompleted) {
         if (logoutCompleted) {
             navController.navigate(Routes.LOGIN) {
@@ -67,7 +68,7 @@ fun AppNavGraph() {
         }
     }
 
-    /* ---------- 🔥 회원탈퇴 처리 ---------- */
+    /* ---------- 회원탈퇴 처리 ---------- */
     LaunchedEffect(withdrawCompleted) {
         if (withdrawCompleted) {
             navController.navigate(Routes.LOGIN) {
@@ -241,7 +242,9 @@ fun AppNavGraph() {
                             request = item.toCreateRoutineRequest(),
                             onSuccess = { navController.popBackStack() }
                         )
-                    }
+                    },
+                    routineViewModel = routineVm,
+                    voiceKey = voiceSettingId
                 )
             }
 
@@ -260,41 +263,43 @@ fun AppNavGraph() {
                     }
                 }
 
-                val serverItems = routineUiState.routines.map {
-                    it.toAutoSentenceItem()
+                val serverItems = routineUiState.routines.map { dto ->
+                    dto.toAutoSentenceItem()
                 }
 
-                val targetItem = serverItems.find {
-                    it.serverId == serverId
+                val targetItem = serverItems.find { item ->
+                    item.serverId == serverId
                 }
 
-                targetItem?.let {
+                targetItem?.let { item ->
                     AutoSentenceAddEditScreen(
                         mode = AutoSentenceMode.EDIT,
-                        initialItem = it,
+                        initialItem = item,
                         onBack = { navController.popBackStack() },
                         onSave = { updatedItem ->
                             routineVm.updateRoutine(
-                                id = it.serverId,
+                                id = item.serverId,
                                 request = updatedItem.toRoutineUpdateRequest(),
                                 onSuccess = { navController.popBackStack() }
                             )
                         },
                         onDelete = {
                             routineVm.deleteRoutine(
-                                id = it.serverId,
+                                id = item.serverId,
                                 onSuccess = {
                                     navController.navigate(Routes.AUTO_SENTENCE_SETTING) {
-                                        popUpTo(Routes.AUTO_SENTENCE_SETTING) {
-                                            inclusive = false
-                                        }
+                                        popUpTo(Routes.AUTO_SENTENCE_SETTING) { inclusive = false }
                                     }
                                 }
                             )
-                        }
+                        },
+                        // 추가: 미리듣기(TTS)용
+                        routineViewModel = routineVm,
+                        voiceKey = voiceSettingId
                     )
                 }
             }
+
 
             /* ---------- AUTO SENTENCE SELECT DELETE ---------- */
             composable(Routes.AUTO_SENTENCE_SELECT_DELETE) {
@@ -339,17 +344,14 @@ fun AppNavGraph() {
         }
 
         /* ---------- 전역 모달 ---------- */
-        modalRoutine?.let { routine ->
-            Log.d("MODAL", "🔥 모달 routine id = ${routine.id}")
+        val context = LocalContext.current
 
+        modalRoutine?.let { routine ->
             RoutineModal(
                 routine = routine,
-                onSnoozeClick = {
-                    routineVm.snoozeRoutine(routine.id)
-                },
-                onDismissClick = {
-                    routineVm.dismissRoutine(routine.id)
-                }
+                onSnoozeClick = { routineVm.snoozeRoutine(routine.id) },
+                onDismissClick = { routineVm.dismissRoutine(routine.id) },
+                onPlayClick = { routineVm.playRoutineTts(context, routine.message, null) }
             )
         }
     }

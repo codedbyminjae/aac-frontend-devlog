@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,7 +26,8 @@ import com.example.aac.data.remote.dto.RoutineDto
 fun RoutineModal(
     routine: RoutineDto,
     onSnoozeClick: () -> Unit,
-    onDismissClick: () -> Unit
+    onDismissClick: () -> Unit,
+    onPlayClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -47,7 +49,7 @@ fun RoutineModal(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                // 🔵 벨 아이콘 원
+                // 벨 아이콘 원
                 Box(
                     modifier = Modifier
                         .size(88.dp)
@@ -66,6 +68,8 @@ fun RoutineModal(
 
                 Text(
                     text = routine.message,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF2C2C2C),
@@ -86,13 +90,14 @@ fun RoutineModal(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // 🔵 재생 버튼
+                // 재생 버튼
                 Box(
                     modifier = Modifier
                         .width(428.dp)
                         .height(60.dp)
                         .background(Color(0xFF0088FF), RoundedCornerShape(8.dp))
-                        .border(1.dp, Color(0xFFD9D9D9), RoundedCornerShape(8.dp)),
+                        .border(1.dp, Color(0xFFD9D9D9), RoundedCornerShape(8.dp))
+                        .clickable { onPlayClick() }, // TTS 추가
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
@@ -208,7 +213,8 @@ fun RoutineModalPreview() {
             updatedAt = ""
         ),
         onSnoozeClick = {},
-        onDismissClick = {}
+        onDismissClick = {},
+        onPlayClick = {}
     )
 }
 
